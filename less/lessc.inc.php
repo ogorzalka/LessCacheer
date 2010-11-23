@@ -47,7 +47,7 @@ class lessc {
 		'px', '%', 'in', 'cm', 'mm', 'em', 'ex', 'pt', 'pc', 'ms', 's', 'deg', 'gr');
 
 	public $importDisabled = false;
-	public $importDir = '';
+	public $importDir = array();
 
 	// compile chunk off the head of buffer
 	function chunk() {
@@ -216,15 +216,16 @@ class lessc {
 		// import statement
 		if ($this->import($url, $media)) {
 			if ($this->importDisabled) return "/* import is disabled */\n";
-
-			$full = $this->importDir.$url;
-			if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
-				$this->addParsedFile($file);
-				$loaded = ltrim($this->removeComments(file_get_contents($file).";"));
-				$this->buffer = substr($this->buffer, 0, $this->count).$loaded.substr($this->buffer, $this->count);
-				return true;
-			}
-
+            
+			foreach($this->importDir as $importDir) {
+    			$full = $importDir.$url;
+    			if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
+    				$this->addParsedFile($file);
+    				$loaded = ltrim($this->removeComments(file_get_contents($file).";"));
+    				$this->buffer = substr($this->buffer, 0, $this->count).$loaded.substr($this->buffer, $this->count);
+    				return true;
+    			}
+            }
 			return $this->indent('@import url("'.$url.'")'.($media ? ' '.$media : '').';');
 		}
 

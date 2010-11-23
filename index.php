@@ -15,6 +15,7 @@ Class LessCacheer {
     public static $parsed_css = '';
     public static $mixin_files = array();
     public static $css_files = array();
+    public static $importDir = array();
     public static $recache;
 	public $headers;
 	
@@ -323,6 +324,37 @@ Class LessCacheer {
 		echo $output;
 		exit;
 	}
+	
+	function generate_paths() {
+	    $sapi= 'undefined';
+	    if (!strstr($_SERVER['PHP_SELF'], $_SERVER['SCRIPT_NAME']) && ($sapi= @ php_sapi_name()) == 'cgi') {
+	        $script_name= $_SERVER['PHP_SELF'];
+	    } else {
+	        $script_name= $_SERVER['SCRIPT_NAME'];
+	    }
+	    $a= explode("/".$this->conf['install_path'], str_replace("\\", "/", dirname($script_name)));
+	    if (count($a) > 1)
+	        array_pop($a);
+	    $url= implode($this->conf['install_path'], $a);
+	    reset($a);
+	    $a= explode($this->conf['install_path'], str_replace("\\", "/", dirname(__FILE__)));
+	    if (count($a) > 1)
+	        array_pop($a);
+	    $pth= implode($this->conf['install_path'], $a);
+	    unset ($a);
+	    $this->conf['base_url']= $url . (substr($url, -1) != "/" ? "/" : "");
+	    $this->conf['base_path'] = $pth . (substr($pth, -1) != "/" && substr($pth, -1) != "\\" ? "/" : "");
+	    //$this->conf['origin_path'] = 
+	    $this->conf['folder_install'] = str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->conf['base_path']);
+
+	    $this->conf['origin_install'] = (in_array($this->conf['folder_install'], array('/',''))) ?  $this->conf['base_path'] : str_replace($this->conf['folder_install'],'', $this->conf['base_path']);;
+
+	    // assign site_url
+	    $this->conf['site_url'] = 'http://';
+	    $this->conf['site_url'] .= $_SERVER['HTTP_HOST'];
+	    $this->conf['site_url'] = str_replace(':' . $_SERVER['SERVER_PORT'], '', $this->conf['site_url']); // remove port from HTTP_HOST  
+	    $this->conf['site_url'] .= $this->conf['base_url'];
+    }
 
     function __construct($f) {
         require ('config.inc.php');
@@ -331,15 +363,9 @@ Class LessCacheer {
         require 'helpers/csscompression/csscompression.class.php';
         
         try {
-            header("Content-type: text/css");   
             $this->recache = false; // init of recache
-            
-            // additionnal conf
-            $conf['script_path'] = $this->fix_path(dirname(__FILE__));
-            $conf['base_path'] = $this->fix_path(str_replace($conf['install_path'], '', $conf['script_path']));
-
             $this->conf = $conf; // make conf usable by all methods
-            
+            $this->generate_paths();
             // mixins import
             if (!$this->mixin_cssfile = DataCache::Get("mixins", "mixin_cssfile")) {
                 $this->mixin_files = self::rglob($this->conf['base_path'].$this->conf['mixins_path'].'/*.less');
@@ -353,18 +379,20 @@ Class LessCacheer {
             
             // foreach css files
             foreach($this->css_files as $css_file) {
-                $css_file_path = self::find_file($css_file, $this->conf['base_path'].$this->conf['css_dir'].'/'); // search the css file
-                if (!empty($css_file_path)) {
+                $css_file_path = $this->conf['origin_install'].$css_file;
+
+                if (file_exists($css_file_path)) {
+                    $this->importDir[] = dirname($css_file_path).'/';
                     $this->css .= $this->cache($css_file_path);
                 }
             }
             
             // return the parsed css
             $cache_name = $this->make_alias($f);
-            
+
             // specify the import dir
             $less_options = array(
-                'importDir' => $this->conf['base_path'].$this->conf['css_dir'].'/'
+                'importDir' => $this->importDir
             );
             
             $less = new lessc(); // instantiate Less
@@ -401,7 +429,7 @@ Class LessCacheer {
                 }
                 $modified = $this->modified($this->css_files[0]);
             }
-
+            header("Content-type: text/css");   
 			$length = strlen($this->parsed_css);
 			
 			$lifetime = ($this->conf['in_production'] === true) ? $this->conf['cachetime'] : 0;
