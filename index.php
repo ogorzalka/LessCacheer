@@ -360,7 +360,7 @@ Class LessCacheer {
         require ('config.inc.php');
         require 'less/lessc.inc.php';
         require 'helpers/cache/cache.class.php';
-        require 'helpers/csscompression/csscompression.class.php';
+        require 'helpers/css-compressor/src/CSSCompression.inc';
         
         try {
             $this->recache = false; // init of recache
