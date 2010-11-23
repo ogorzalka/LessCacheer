@@ -1,0 +1,20 @@
+#
+# CSS Compression [VERSION] Change Log
+# [DATE]
+# Corey Hart @ http://www.codenothing.com
+#
+
+# New Features
+- Configuration Modes
+- pseduo-space, add space after pseduo selectors for ie6
+- removing leading 0 of a decimal, 0.633px -> .633px
+- handling ms filter paths
+
+# Enhancements
+- Now handling all '@' prefixes (charsets,media,imports,font-family,etc..)
+- Removed sketchy include method in unit testing, all selectors/details defined inside function
+- Helper conversion definitions(long2hex, hex2short) are now in JSON based files.
+
+
+# Possible Breaks
+- Removing 'rm-multi-define' option, compression is worthless without it.
