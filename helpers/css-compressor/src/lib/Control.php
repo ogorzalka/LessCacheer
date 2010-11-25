@@ -16,7 +16,7 @@ Class CSSCompression_Control
 	 * @param (array) stats: Holds compression stats
 	 */ 
 	public $css = '';
-	public $mode = '';
+	public $mode = 'custom';
 	public $options = array();
 	public $stats = array();
 
@@ -48,6 +48,7 @@ Class CSSCompression_Control
 		'Combine',
 		'Organize',
 		'Cleanup',
+		'Setup',
 		'Compress',
 	);
 
@@ -185,7 +186,7 @@ Class CSSCompression_Control
 			return $this->$class->access( $method, $args );
 		}
 		else {
-			throw new Exception( "Unknown Class Access - " . $class );
+			throw new CSSCompression_Exception( "Unknown Class Access - " . $class );
 		}
 	}
 };

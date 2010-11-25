@@ -4,9 +4,9 @@
  * [DATE]
  * Corey Hart @ http://www.codenothing.com
  */ 
-error_reporting( E_ALL );
 
 // Controller handles all subclass loading
+require( dirname(__FILE__) . '/lib/Exception.php' );
 require( dirname(__FILE__) . '/lib/Control.php' );
 
 
@@ -137,7 +137,28 @@ Class CSSCompression
 	);
 
 	/**
-	 * Controller of all subclasses
+	 * Static Helpers
+	 *
+	 * @instance express: Use a separate instance from singleton access 
+	 * @instance instance: Saved instance of CSSCompression
+	 * @param (array) rjson: Array of patterns and their 
+	 *     replacements to clean out comments in a josn file
+	 */
+	private static $express;
+	private static $instance;
+	private static $rjson = array(
+		'patterns' => array(
+			"/\/\*(.*?)\*\//s",
+			"/(\t|\s)+\/\/.*/"
+		),
+		'replacements' => array(
+			'',
+			''
+		),
+	);
+
+	/**
+	 * Controller Instance
 	 */
 	private $Control;
 
@@ -154,7 +175,7 @@ Class CSSCompression
 		if ( $css ) {
 			// Allow passing options/mode only
 			if ( is_array( $css ) || ( strlen( $css ) < 15 && array_key_exists( $css, self::$modes ) ) ) {
-				$this->Control->Option->merge( $options );
+				$this->Control->Option->merge( $css );
 			}
 			else {
 				$this->css = $this->Control->compress( $css, $options );
@@ -227,18 +248,16 @@ Class CSSCompression
 	/**
 	 * Static access for direct compression
 	 *
-	 * @instance expressi: Use a separate instance from singleton access 
 	 * @param (string) css: Stylesheet to be compressed
 	 * @param (array|string) options: Array of options or mode to use.
 	 */
-	private static $expressi;
 	public static function express( $css = NULL, $options = NULL ) {
-		if ( ! self::$expressi ) {
-			self::$expressi = new CSSCompression();
+		if ( ! self::$express ) {
+			self::$express = new CSSCompression();
 		}
 
-		self::$expressi->reset();
-		return self::$expressi->compress( $css, $options );
+		self::$express->reset();
+		return self::$express->compress( $css, $options );
 	}
 
 	/**
@@ -253,9 +272,8 @@ Class CSSCompression
 	/**
 	 * The Singleton access method (for those that want it)
 	 *
-	 * @instance instance: Saved instance of CSSCompression
+	 * @params none
 	 */
-	private static $instance;
 	public static function getInstance(){
 		if ( ! self::$instance ) {
 			self::$instance = new self;
@@ -274,11 +292,7 @@ Class CSSCompression
 		$file = $file[ 0 ] == '/' ? $file : dirname(__FILE__) . '/helpers/' . $file;
 
 		// Strip comments
-		$json = preg_replace(
-			array( "/\/\*(.*?)\*\//s", "/(\t|\s)+\/\/.*/" ),
-			array( '', '' ),
-			file_get_contents( $file )
-		);
+		$json = preg_replace( self::$rjson['patterns'], self::$rjson['replacements'], file_get_contents( $file ) );
 
 		// Decode json
 		$json = json_decode( $json, true );
@@ -288,25 +302,25 @@ Class CSSCompression
 			// JSON Errors, taken directly from http://php.net/manual/en/function.json-last-error.php
 			switch( json_last_error() ) {
 				case JSON_ERROR_NONE:
-					$json = new Exception( 'JSON Error - No error has occurred' );
+					$json = new CSSCompression_Exception( 'JSON Error - No error has occurred' );
 					break;
 				case JSON_ERROR_DEPTH:
-					$json = new Exception( 'JSON Error - The maximum stack depth has been exceeded' );
+					$json = new CSSCompression_Exception( 'JSON Error - The maximum stack depth has been exceeded' );
 					break;
 				case JSON_ERROR_CTRL_CHAR:
-					$json = new Exception( 'JSON Error - Control character error, possibly incorrectly encoded' );
+					$json = new CSSCompression_Exception( 'JSON Error - Control character error, possibly incorrectly encoded' );
 					break;
 				case JSON_ERROR_STATE_MISMATCH:
-					$json = new Exception( 'JSON Error - Invalid or malformed JSON' );
+					$json = new CSSCompression_Exception( 'JSON Error - Invalid or malformed JSON' );
 					break;
 				case JSON_ERROR_SYNTAX:
-					$json = new Exception( 'JSON Error - Syntax error' );
+					$json = new CSSCompression_Exception( 'JSON Error - Syntax error' );
 					break;
 				case JSON_ERROR_UTF8:
-					$json = new Exception( 'JSON Error - Malformed UTF-8 characters, possibly incorrectly encoded' );
+					$json = new CSSCompression_Exception( 'JSON Error - Malformed UTF-8 characters, possibly incorrectly encoded' );
 					break;
 				default:
-					$json = new Exception( 'Unknown JSON Error' );
+					$json = new CSSCompression_Exception( 'Unknown JSON Error' );
 					break;
 			}
 		}
@@ -325,13 +339,13 @@ Class CSSCompression
 	 */
 	public function access( $class = NULL, $method = NULL, $args = NULL ) {
 		if ( ! self::DEV ) {
-			throw new Exception( "CSSCompression is not in development mode." );
+			throw new CSSCompression_Exception( "CSSCompression is not in development mode." );
 		}
 		else if ( $class === NULL || $method === NULL || $args === NULL ) {
-			throw new Exception( "Invalid Access Call." );
+			throw new CSSCompression_Exception( "Invalid Access Call." );
 		}
 		else if ( ! is_array( $args ) ) {
-			throw new Exception( "Expecting array of arguments." );
+			throw new CSSCompression_Exception( "Expecting array of arguments." );
 		}
 
 		return $this->Control->access( $class, $method, $args );

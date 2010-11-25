@@ -358,7 +358,7 @@ Class LessCacheer {
 
     function __construct($f) {
         require ('config.inc.php');
-        require 'less/lessc.inc.php';
+        require 'lessphp/lessc.inc.php';
         require 'helpers/cache/cache.class.php';
         require 'helpers/css-compressor/src/CSSCompression.inc';
         
@@ -380,13 +380,14 @@ Class LessCacheer {
             // foreach css files
             foreach($this->css_files as $css_file) {
                 $css_file_path = $this->conf['origin_install'].$css_file;
-
+            
                 if (file_exists($css_file_path)) {
                     $this->importDir[] = dirname($css_file_path).'/';
                     $this->css .= $this->cache($css_file_path);
                 }
             }
             
+
             // return the parsed css
             $cache_name = $this->make_alias($f);
 

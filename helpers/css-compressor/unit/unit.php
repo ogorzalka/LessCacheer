@@ -41,8 +41,13 @@ Class CSScompressionUnitTest
 		$this->errors = 0;
 
 		// CSS Compressor doesn't currently throw exceptions, so we have to
-		if ( $this->sandbox instanceof Exception ) {
+		if ( $this->sandbox instanceof CSSCompression_Exception ) {
 			throw $this->sandbox;
+		}
+
+		// Stash copies of each of the common modes
+		foreach ( CSSCompression::$modes as $mode => $options ) {
+			$this->instances[ $mode ] = new CSSCompression( $mode );
 		}
 
 		// Run through sandbox tests
@@ -53,6 +58,10 @@ Class CSScompressionUnitTest
 		$this->setOptions();
 		$this->testSheets();
 
+		// Test express compression
+		$this->express();
+
+		// Multi compression checks
 		if ( isset( $_SERVER['argv'][ 1 ] ) && $_SERVER['argv'][ 1 ] == 'all' ) {
 			$this->testDoubles();
 		}
@@ -187,12 +196,23 @@ Class CSScompressionUnitTest
 	 */
 	private function testSheets(){
 		$handle = opendir( BEFORE );
-
 		while ( ( $file = readdir( $handle ) ) !== false ) {
 			if ( preg_match( "/\.css$/", $file ) ) {
+				// Pit has special needs
+				if ( $file == 'pit.css' ) {
+					$this->compressor->option( 'readability', CSSCompression::READ_MAX );
+					$this->compressor->option( 'pseduo-space', false );
+				}
+
+				// Mark the result
 				$before = trim( file_get_contents( BEFORE . $file ) );
 				$after = trim( file_get_contents( AFTER . $file ) );
 				$this->mark( $file, "full", $this->compressor->compress( $before ) === $after );
+
+				// Reset pits special needs
+				if ( $file == 'pit.css' ) {
+					$this->setOptions();
+				}
 			}
 		}
 	}
@@ -204,10 +224,6 @@ Class CSScompressionUnitTest
 	 * @params none
 	 */
 	private function testDoubles(){
-		foreach ( CSSCompression::$modes as $mode => $options ) {
-			$this->instances[ $mode ] = new CSSCompression( '', $mode );
-		}
-
 		$handle = opendir( BENCHMARK );
 		while ( ( $file = readdir( $handle ) ) !== false ) {
 			if ( preg_match( "/\.css$/", $file ) ) {
@@ -218,9 +234,20 @@ Class CSScompressionUnitTest
 					$second = $instance->compress( $first );
 					$this->mark( 'Double CSS ' . $file, $mode, $first === $second );
 					$this->mark( 'Double Size ' . $file, $mode, $size === $instance->stats['after']['size'] );
-					break;
 				}
 			}
+		}
+	}
+
+	/**
+	 * Make sure express is working correctly
+	 *
+	 * @params none
+	 */
+	private function express(){
+		$content = file_get_contents( BEFORE . 'pit.css' );
+		foreach ( $this->instances as $mode => $instance ) {
+			$this->mark( "CSSCompression.express", $mode, CSSCompression::express( $content, $mode ) === $instance->compress( $content ) );
 		}
 	}
 
