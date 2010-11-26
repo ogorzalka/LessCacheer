@@ -45,7 +45,7 @@ class lessc {
 	static private $dtypes = array('expression', 'variable', 'function', 'negative'); // types with delayed computation
 	static private $units = array(
 		'px', '%', 'in', 'cm', 'mm', 'em', 'ex', 'pt', 'pc', 'ms', 's', 'deg', 'gr');
-    
+
 	// public options
 	public $options = array(
 	    'importDisabled' => false,
@@ -117,7 +117,7 @@ class lessc {
 		}
 		
 		// see if we're in animations and handle pseudo classes
-		if ($this->inAnimations && $this->match("(to|from|[0-9]+%)", $m) && $this->literal('{')) {
+		if($this->inAnimations && $this->match("(to|from|[0-9]+%)", $m) && $this->literal('{')) {
 			$this->push();
 			$this->set('__tags', array($m[1]));
 			return true;
@@ -151,7 +151,7 @@ class lessc {
 		// opening css block
 		if ($this->tags($tags) && $this->literal('{')) {
 			//  move @ tags out of variable namespace!
-			foreach ($tags as &$tag) {
+			foreach($tags as &$tag) {
 				if ($tag{0} == $this->vPrefix) $tag[0] = $this->mPrefix;
 			}
 
@@ -177,8 +177,10 @@ class lessc {
 				return "}\n";
 			}
 
+			$tags = $this->multiplyTags();
 			$env = end($this->env);
-			$tags = $env['__tags'];
+			$ctags = $env['__tags'];
+			unset($env['__tags']);
 
 			// insert the default arguments
 			if (isset($env['__args'])) {
@@ -189,17 +191,8 @@ class lessc {
 				}
 			}
 
-			// show the compiled block if we have the whole thing and it is visisble
-			if ($this->level == 2) {
-				$concreteTags = array();
-				foreach ($tags as $tag) {
-					if ($tag{0} != $this->mPrefix) $concreteTags[] = $tag;
-				}
-
-				if (!empty($concreteTags)) {
-					$out = $this->compileBlock($concreteTags, $env);
-				}
-			}
+			if (!empty($tags))
+				$out = $this->compileBlock($tags, $env);
 
 			try {
 				$this->pop();
@@ -210,9 +203,14 @@ class lessc {
 
 			// make the block(s) available in the new current scope
 			if (!isset($env['__dontsave'])) {
-				$merge_env = array();
-				foreach ($tags as $t) $merge_env[$t] = $env;
-				$this->merge($merge_env);
+				foreach ($ctags as $t) {
+					// if the block already exists then merge
+					if ($this->get($t, array(end($this->env)))) {
+						$this->merge($t, $env);
+					} else {
+						$this->set($t, $env);
+					}
+				}
 			}
 
 			return isset($out) ? $out : true;
@@ -240,13 +238,9 @@ class lessc {
 			$env = $this->getEnv($tags);
 			if ($env == null) return true;
 
-			// if we have arguments then insert them before their respective env values
-			// TODO: this is silly, because it makes it so the arguments are also mixed
-			// into the new scope. Keeping it for now though otherwise sub-blocks won't see
-			// arguments. -- change to making arg temp env and pushing and stack then recursively
-			// resolving all mixed in names.
+			// if we have arguments then insert them
 			if (!empty($env['__args'])) {
-				foreach ($env['__args'] as $arg) {
+				foreach($env['__args'] as $arg) {
 					$vname = $this->vPrefix.$arg[0];
 					$value = is_array($argv) ? array_shift($argv) : null;
 					// copy default value if there isn't one supplied
@@ -259,26 +253,72 @@ class lessc {
 					if (isset($env[$vname])) {
 						array_unshift($env[$vname], $value);
 					} else {
+						// new element
 						$env[$vname] = array($value);
 					}
 				}
 			}
 
-			$this->merge($env);
-
-			// reduce any immedate incoming values in order to prevent values changing
-			// due to namespace collision. This is to compensate for mixing in __args.
+			// copy all properties from tmp env to current block
+			ob_start();
+			$blocks = array();
+			$toReduce = array();
 			foreach ($env as $name => $value) {
-				if ($this->isProperty($name, $value)) {
-					$reduced = array();
-					foreach ($this->get($name) as $value) {
-						$reduced[] = $this->reduce($value);
-					}
-					$this->set($name, $reduced);
-				}
+				// skip the metatdata
+				if (preg_match('/^__/', $name)) continue;
+
+				// if it is a block, remember it to compile after everything
+				// is mixed in
+				if (!isset($value[0]))
+					$blocks[] = array($name, $value);
+				else if ($name{0} != $this->vPrefix)
+					$toReduce[] = $name;
+
+				// copy the data
+				// don't overwrite previous value, look in current env for name
+				if ($this->get($name, array(end($this->env)))) {
+					while ($tval = array_shift($value))
+						$this->append($name, $tval);
+				} else 
+					$this->set($name, $value); 
 			}
 
-			return true;
+			// extract the args as a temp environment, put them before top
+			if (isset($env['__args'])) {
+				$tmp = array();
+				foreach ($env['__args'] as $arg) {
+					if (isset($arg[1])) // if there is a value
+						$tmp[$this->vPrefix.$arg[0]] = array($arg[1]);
+				}
+
+				$top = array_pop($this->env);
+				array_push($this->env, $tmp, $top);
+			}
+
+
+			// reduce all values that came out of this mixin
+			foreach ($toReduce as $name) {
+				$reduced = array();
+				foreach ($this->get($name) as $value) {
+					$reduced[] = $this->reduce($value);
+				}
+				$this->set($name, $reduced);
+			}
+
+			if (isset($env['__args'])) {
+				// get rid of tmp
+				$top = array_pop($this->env);
+				array_pop($this->env);
+				array_push($this->env, $top);
+			}
+
+			// render sub blocks
+			foreach ($blocks as $b) {
+				$rtags = $this->multiplyTags(array($b[0]));
+				echo $this->compileBlock($rtags, $b[1], true);
+			}
+
+			return ob_get_clean();
 		} else {
 			$this->seek($s);
 		}
@@ -292,6 +332,29 @@ class lessc {
 	function fileExists($name) {
 		// sym link workaround
 		return file_exists($name) || file_exists(realpath(preg_replace('/\w+\/\.\.\//', '', $name)));
+	}
+
+	// recursively find the cartesian product of all tags in stack
+	function multiplyTags($tags = array(' '), $d = null) {
+		if ($d === null) $d = count($this->env) - 1;
+
+		$parents = $d == 0 ? $this->env[$d]['__tags']
+			: $this->multiplyTags($this->env[$d]['__tags'], $d - 1);
+
+		$rtags = array();
+		foreach ($parents as $p) {
+			foreach ($tags as $t) {
+				if ($t{0} == $this->mPrefix) continue; // skip functions
+				$d = ' ';
+				if ($t{0} == ':' || $t{0} == $this->selfSelector) {
+					$t = ltrim($t, $this->selfSelector);
+					$d = '';
+				}
+				$rtags[] = trim($p.$d.$t);
+			}
+		}
+
+		return $rtags;
 	}
 
 	// a list of expressions
@@ -489,7 +552,7 @@ class lessc {
 		// why is a property wrapped in quotes, who knows!
 		if ($this->variable($name)) {
 			$name = $this->vPrefix.$name;
-		} elseif ($this->literal("'") && $this->keyword($name) && $this->literal("'")) {
+		} elseif($this->literal("'") && $this->keyword($name) && $this->literal("'")) {
 			// .. $this->count is messed up if we wanted to test another access type
 		} else {
 			$this->seek($s);
@@ -510,7 +573,7 @@ class lessc {
 		$s = $this->seek();
 		if ($this->literal('"', false)) {
 			$delim = '"';
-		} elseif ($this->literal("'", false)) {
+		} else if($this->literal("'", false)) {
 			$delim = "'";
 		} else {
 			return false;
@@ -566,7 +629,7 @@ class lessc {
 			}
 
 			$num = hexdec($num);
-			foreach (array(3,2,1) as $i) {
+			foreach(array(3,2,1) as $i) {
 				$t = $num % $width;
 				$num /= $width;
 
@@ -755,35 +818,25 @@ class lessc {
 		else return array('list', $delim, $items);
 	}
 
-	function compileBlock($rtags, $env) {
+	function compileBlock($rtags, $env, $doSubBlocks = false) {
 		if (empty($rtags)) return '';
 
 		$children = array();
-		$visitedMixins = array(); // mixins to skip
 		$props = 0;
-
+		// print all the visible properties
 		ob_start();
 		foreach ($env as $name => $value) {
-			if ($this->isProperty($name, $value)) {
+			// todo: change this, poor hack
+			// make a better name storage system!!! (value types are fine)
+			// but.. don't render special properties (blocks, vars, metadata)
+			if (isset($value[0]) && $name{0} != $this->vPrefix && $name != '__args') {
 				echo $this->compileProperty($name, $value, 1)."\n";
 				$props += count($value);
-			} elseif ($this->isBlock($name, $value)) {
-				if (isset($visitedMixins[$name])) continue;
-
+			} elseif ($doSubBlocks && !isset($value[0]) && $name{0} != $this->mPrefix) {
 				$this->push($env);
-
 				$new_tags = array();
-				// multiply tags
-				foreach ($rtags as $outerTag) {
-					foreach ($value['__tags'] as $innerTag) {
-						$visitedMixins[$innerTag] = true; // prevent rendering this block multiple times
-						$new_tags[] = trim($outerTag.
-							($innerTag{0} == $this->selfSelector || $innerTag{0} == ':'
-								? ltrim($innerTag, $this->selfSelector) : ' '.$innerTag));
-					}
-				}
-				$children[] = $this->compileBlock($new_tags, $value);
-
+				foreach ($rtags as $tag) $new_tags[] = $tag.' '.$name;
+				$children[] = $this->compileBlock($new_tags, $value, true);
 				$this->pop();
 			}
 		}
@@ -819,7 +872,7 @@ class lessc {
 	}
 
 	function compileValue($value) {
-		switch ($value[0]) {
+		switch($value[0]) {
 		case 'list':
 			// [1] - delimiter
 			// [2] - array of values
@@ -840,7 +893,7 @@ class lessc {
 			// search for inline variables to replace
 			$replace = array();
 			if (preg_match_all('/{('.$this->preg_quote($this->vPrefix).'[\w-_][0-9\w-_]*?)}/', $value[1], $m)) {
-				foreach ($m[1] as $name) {
+				foreach($m[1] as $name) {
 					if (!isset($replace[$name]))
 						$replace[$name] = $this->compileValue(array('variable', $name));
 				}
@@ -948,14 +1001,14 @@ class lessc {
 		while (in_array($var[0], self::$dtypes)) {
 			if ($var[0] == 'expression') {
 				$var = $this->evaluate($var[1], $var[2], $var[3]);
-			} elseif ($var[0] == 'variable') {
+			} else if ($var[0] == 'variable') {
 				$var = $this->getVal($var[1], $this->pushName($var[1]), $defaultValue);
 				$pushed++;
-			} elseif ($var[0] == 'function') {
+			} else if ($var[0] == 'function') {
 				$color = $this->funcToColor($var);
 				if ($color) $var = $color;
 				break; // no where to go after a function
-			} elseif ($var[0] == 'negative') {
+			} else if ($var[0] == 'negative') {
 				$value = $this->reduce($var[1]);
 				if (is_numeric($value[1])) {
 					$value[1] = -1*$value[1];
@@ -1073,7 +1126,7 @@ class lessc {
 		else $type = $right[0];
 
 		$value = 0;
-		switch ($op) {
+		switch($op) {
 		case '+':
 			$value = $left[1] + $right[1];
 			break;	
@@ -1141,11 +1194,6 @@ class lessc {
 		$this->env[count($this->env) - 1][$name][] = $value;
 	}
 
-	function append_all($name, $values) {
-		$top =& $this->env[count($this->env) - 1];
-		foreach ($values as $value) $top[$name][] = $value;
-	}
-
 	// put on the front of the value
 	function prepend($name, $value) {
 		if (isset($this->env[count($this->env) - 1][$name]))
@@ -1154,11 +1202,11 @@ class lessc {
 	}
 
 	// get the highest occurrence of value
-	function get($name, $env_stack = null) {
-		if (empty($env_stack)) $env_stack = $this->env;
+	function get($name, $env = null) {
+		if (empty($env)) $env = $this->env;
 
-		for ($i = count($env_stack) - 1; $i >= 0; $i--)
-			if (isset($env_stack[$i][$name])) return $env_stack[$i][$name];
+		for ($i = count($env) - 1; $i >= 0; $i--)
+			if (isset($env[$i][$name])) return $env[$i][$name];
 
 		return null;
 	}
@@ -1195,7 +1243,7 @@ class lessc {
 		if (!is_array($path)) $path = array($path);
 
 		//  move @ tags out of variable namespace
-		foreach ($path as &$tag)
+		foreach($path as &$tag)
 			if ($tag{0} == $this->vPrefix) $tag[0] = $this->mPrefix;
 
 		$env = $this->get(array_shift($path));
@@ -1210,59 +1258,18 @@ class lessc {
 		return $env;
 	}
 
-	// merge $env into the environment on the top of the stack
-	function merge($env) {
-		// see if we have to rework __tags, mixing into some of bound blocks breaks them up
-		foreach ($env as $name => $value) {
-			if (!$this->isBlock($name, $value, false)) continue;
+	// merge a block into the current env
+	function merge($name, $value) {
+		// if the current block isn't there then just set
+		$top =& $this->env[count($this->env) - 1];
+		if (!isset($top[$name])) return $this->set($name, $value);
 
-			$top =& $this->env[count($this->env) - 1];
-			if (isset($top[$name]) && $top[$name]['__tags'] != $value['__tags']) {
-
-				$source = $top[$name]['__tags'];
-				$dest = $value['__tags'];
-
-				$shared = array_values(array_intersect($source, $dest));
-
-				$broken = array_values(array_diff($source, $dest));
-				$split = array_values(array_diff($dest, $source));
-
-				$top[$name]['__tags'] = $shared;
-				foreach ($broken as $brokenName) {
-					$top[$brokenName]['__tags'] = $broken;
-				}
-
-				foreach ($split as $splitName) {
-					$env[$splitName]['__tags'] = $split;
-				}
-			}
+		// copy the block into the old one, including meta data
+		foreach ($value as $k=>$v) {
+			// todo: merge property values instead of replacing
+			// have to check type for this
+			$top[$name][$k] = $v;
 		}
-
-		foreach ($env as $name => $value) {
-			if ($this->isProperty($name, $value, false)) {
-				$this->append_all($name, $value);
-			} elseif ($this->isBlock($name, $value, false)) {
-				$top =& $this->env[count($this->env) - 1];
-				if (isset($top[$name])) {
-					// echo "merging $name\n";
-					$this->push($top[$name]);
-					$this->merge($value);
-					$this->set($name, $this->pop());
-				} else {
-					$this->set($name, $value);
-				}
-			}
-		}
-	}
-	
-	function isProperty($name, $value, $isConcrete = true) {
-		return is_array($value) && array_key_exists(0, $value) && substr($name, 0,2) != '__' &&
-			(!$isConcrete || $name{0} != $this->vPrefix);
-	}
-
-	function isBlock($name, $value, $isConcrete = true) {
-		return is_array($value) && !array_key_exists(0, $value) &&
-			(!$isConcrete || $name{0} != $this->mPrefix);
 	}
 
 	function literal($what, $eatWhitespace = true) {
@@ -1320,8 +1327,8 @@ class lessc {
 		else $this->count = $where;
 		return true;
 	}
-    
-	function merge_options($a, $b) {
+
+    function merge_options($a, $b) {
 	    return array_merge((array)$a, (array)$b);
 	}
 	
@@ -1400,7 +1407,7 @@ class lessc {
 		$done = false;
 		while (true) {
 			// find the next item
-			foreach ($look as $token) {
+			foreach($look as $token) {
 				$pos = strpos($text, $token);
 				if ($pos !== false) {
 					if (!isset($min) || $pos < $min[1]) $min = array($token, $pos);
@@ -1412,7 +1419,7 @@ class lessc {
 			$count = $min[1];
 			$skip = 0;
 			$newlines = 0;
-			switch ($min[0]) {
+			switch($min[0]) {
 			case 'url(':
 				if (preg_match('/url\(.*?\)/', $text, $m, 0, $count))
 					$count += strlen($m[0]) - strlen($min[0]);
@@ -1487,17 +1494,17 @@ class lessc {
 		// assume no root
 		$root = null;
 
-		if (is_string($in)) {
+		if ( is_string($in) ) {
 			$root = $in;
-		} elseif (is_array($in) and isset($in['root'])) {
-			if ($force or ! isset($in['files'])) {
+		} elseif ( is_array($in) and isset($in['root']) ) {
+			if ( $force or ! isset($in['files']) ) {
 				// If we are forcing a recompile or if for some reason the
 				// structure does not contain any file information we should
 				// specify the root to trigger a rebuild.
 				$root = $in['root'];
-			} elseif (isset($in['files']) and is_array($in['files'])) {
-				foreach ($in['files'] as $fname => $ftime ) {
-					if (!file_exists($fname) or filemtime($fname) > $ftime) {
+			} elseif ( isset($in['files']) and is_array($in['files']) ) {
+				foreach ( $in['files'] as $fname => $ftime ) {
+					if ( ! file_exists($fname) or filemtime($fname) > $ftime ) {
 						// One of the files we knew about previously has changed
 						// so we should look at our incoming root again.
 						$root = $in['root'];
@@ -1511,7 +1518,7 @@ class lessc {
 			return null;
 		}
 
-		if ($root !== null) {
+		if ( $root !== null ) {
 			// If we have a root value which means we should rebuild.
 			$less = new lessc($root);
 			$out = array();
@@ -1527,5 +1534,7 @@ class lessc {
 		}
 
 	}
+
 }
 
+?>

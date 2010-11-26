@@ -67,7 +67,7 @@ class Cache extends LessCacheer
     protected static function write($group, $id, $ttl, $data)
     {
         $filename = self::getFilename($group, $id);
-        print_r($filename);
+        
         if ($fp = @fopen($filename, 'xb')) {
             if (flock($fp, LOCK_EX)) {
                 fwrite($fp, $data);
