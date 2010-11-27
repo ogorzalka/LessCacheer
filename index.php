@@ -246,7 +246,8 @@ Class LessCacheer
     
     function less_to_css($input) {
         $less = new lessc(); // instantiate Less
-
+        $less->importDir = $this->conf['less_options']['importDir']; // define import Directories
+        
         // retrieve the main merged less file alias
         $cache_name = file::make_alias($this->f);
         
@@ -259,7 +260,7 @@ Class LessCacheer
 
         // if there's no cache file
         if (!$this->conf['in_production'] || !$parsed_css = DataCache::Get($cache_name, 'mainless')) {
-            $parsed_css = $less->parse($input, $this->conf['less_options']); // parse the less file
+            $parsed_css = $less->parse($input); // parse the less file
             if ($this->conf['use_compression']) {
                 $CSSC             = new CSSCompression($parsed_css, $this->conf['compression_options']);
                 $parsed_css = $CSSC->css;
