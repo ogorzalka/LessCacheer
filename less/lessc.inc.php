@@ -45,10 +45,15 @@ class lessc {
 	static private $dtypes = array('expression', 'variable', 'function', 'negative'); // types with delayed computation
 	static private $units = array(
 		'px', '%', 'in', 'cm', 'mm', 'em', 'ex', 'pt', 'pc', 'ms', 's', 'deg', 'gr');
-
-	public $importDisabled = false;
-	public $importDir = array();
-
+	
+	// public options
+	public $options = array(
+		'importDisabled' => false,
+		'importDir' => array(),
+		'line_init' => 1,
+		'lineComment' => 1,
+	);
+	
 	// compile chunk off the head of buffer
 	function chunk() {
 		if (empty($this->buffer)) return false;
@@ -153,8 +158,7 @@ class lessc {
 			}
 
 			$this->push();
-			$this->set('__tags', $tags);	
-
+			$this->set('__tags', $tags);
 			return true;
 		} else {
 			$this->seek($s);
@@ -215,9 +219,9 @@ class lessc {
 		
 		// import statement
 		if ($this->import($url, $media)) {
-			if ($this->importDisabled) return "/* import is disabled */\n";
+			if ($this->options['importDisabled']) return "/* import is disabled */\n";
             
-			foreach($this->importDir as $importDir) {
+			foreach($this->options['importDir'] as $importDir) {
     			$full = $importDir.$url;
     			if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
     				$this->addParsedFile($file);
@@ -839,8 +843,10 @@ class lessc {
 		}
 		$list = ob_get_clean();
 		if ($props == 0) return '';
-
-		$blockDecl = implode(", ", $rtags).' {';
+		
+		$lineComment = $this->options['lineComment'] + substr_count(substr($this->buffer, 0, $this->count), "\n");
+		$blockDecl = "/* line $lineComment */\n";
+		$blockDecl .= implode(", ", $rtags).' {';
 		if ($props > 1)
 			return $this->indent($blockDecl).$list.$this->indent('}');
 		else {
@@ -1322,21 +1328,21 @@ class lessc {
 		else $this->count = $where;
 		return true;
 	}
-
+	
+	function merge_options($a, $b) {
+		return array_merge((array)$a, (array)$b);
+	}
 
 	// parse and compile buffer
 	function parse($str = null,$options = array()) {
-		if ($str) $this->buffer = $str;		
-        
-		if (!empty($options['importDir'])) {
-		    $this->importDir = $options['importDir'];
-	    }
+		if ($str) $this->buffer = $str;
+		$this->options = $this->merge_options($this->options, $options);
 		$this->env = array();
 		$this->expandStack = array();
 		$this->indentLevel = 0;
 		$this->media = null;
 		$this->count = 0;
-		$this->line = 1;
+		$this->line = $this->options['line_init'];
 		$this->level = 0;
 
 		$this->buffer = $this->removeComments($this->buffer);
@@ -1348,7 +1354,7 @@ class lessc {
 			$this->line  += substr_count($m[0], "\n");
 			$this->buffer = ltrim($this->buffer);
 		}
-
+		
 		$out = '';
 		while (false !== ($compiled = $this->chunk())) {
 			if (is_string($compiled)) $out .= $compiled;
@@ -1530,5 +1536,3 @@ class lessc {
 	}
 
 }
-
-?>

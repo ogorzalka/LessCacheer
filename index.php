@@ -10,6 +10,7 @@ Class LessCacheer {
     * @var array
     */
     private static $find_file_paths;
+    public static $mixinscss = '';
     public static $css = '';
     public static $mixin_cssfile = '';
     public static $parsed_css = '';
@@ -18,6 +19,8 @@ Class LessCacheer {
     public static $importDir = array();
     public static $recache;
 	public $headers;
+	public $mixin_totallines = -1;
+	public $parsed_mixins = 0;
 	
 
     /**
@@ -44,6 +47,11 @@ Class LessCacheer {
         return is_array($files) ? $files : array();
     }
     
+    function getTotalLines($str) {
+    	$check = explode("\n", $str);
+    	return count($check);
+    }
+
     /**
     * Get all include paths.
     *
@@ -53,66 +61,10 @@ Class LessCacheer {
     {
         return self::$include_paths;
     }
-    
-    /**
-    * Adds a path to the include paths list
-    *
-    * @param     $path     The server path to add
-    * @return     void
-    */
-    public static function add_include_path($path)
-    {
-        if(func_num_args() > 1)
-        {
-            $args = func_get_args();
-            
-            foreach($args as $inc)
-            self::add_include_path($inc);
-        }
-        
-        if(is_file($path))
-        {
-            $path = dirname($path);
-        }
-        
-        if(!in_array($path,self::$include_paths))
-        {
-            self::$include_paths[] = bCSS_Utils::fix_path($path);
-        }
-    }
-    
-    /**
-    * Looks for the file recursively in the specified directory.
-    * This will also look for _filename to handle Sass partials.
-    * @param string filename to look for
-    * @param string path to directory to look in and under
-    * @return mixed string: full path to file if found, false if not
-    */
-    function find_file($filename, $dir) {
-        $partialname = dirname($filename).DIRECTORY_SEPARATOR.'_'.basename($filename);
-        
-        foreach (array($filename, $partialname) as $file) {
-            if (file_exists($dir . DIRECTORY_SEPARATOR . $file)) {
-                return $this->fix_path(realpath($dir . DIRECTORY_SEPARATOR . $file));
-            }
-        }
-        
-        $files = array_slice(scandir($dir), 2);
-        
-        foreach ($files as $file) {
-            if (is_dir($dir . DIRECTORY_SEPARATOR . $file)) {
-                $path = self::find_file($filename, $dir . DIRECTORY_SEPARATOR . $file);
-                if ($path !== false) {
-                    return $this->fix_path($path);
-                }
-            }
-        } // foreach
-        return false;
-    }
-    
+
     function make_alias($str) {
         $str = str_replace(
-            array($this->conf['base_path'], '.less', '/'),
+            array($this->conf['origin_install'], '.less', '/'),
             array('', '', '_'),
         $str);
         return $str;
@@ -142,8 +94,7 @@ Class LessCacheer {
             DataCache::Put($alias_cache, $basename, $this->conf['cachetime'], $data); // put data inside the cache
         }
         return $data;
-    }
-    
+    }    
 
 	/**
 	 * Returns the last modified date of a cache file
@@ -363,6 +314,7 @@ Class LessCacheer {
         require 'helpers/css-compressor/src/CSSCompression.inc';
         
         try {
+        	$less = new lessc(); // instantiate Less
             $this->recache = false; // init of recache
             $this->conf = $conf; // make conf usable by all methods
             $this->generate_paths();
@@ -370,10 +322,15 @@ Class LessCacheer {
             if (!$this->mixin_cssfile = DataCache::Get("mixins", "mixin_cssfile")) {
                 $this->mixin_files = self::rglob($this->conf['base_path'].$this->conf['mixins_path'].'/*.less');
                 foreach($this->mixin_files as $mixin_file) {
-                    $this->css .= $this->cache($mixin_file, true);
+                    $this->mixinscss .= $this->cache($mixin_file, true);
                 }
             }
-            
+			
+            if (count($this->mixin_cssfile) > 0) {
+            	// retrieve the number of total lines
+				$this->mixin_totallines = $this->getTotalLines($this->mixinscss) + 2;
+	            $this->css .= $this->mixinscss;
+        	}
             // explode css files
             $this->css_files = explode(',', $f);
             
@@ -392,11 +349,11 @@ Class LessCacheer {
 
             // specify the import dir
             $less_options = array(
-                'importDir' => $this->importDir
+                'importDir' => $this->importDir,
+	            'line_init' => -$this->mixin_totallines,
+	            'lineComment' =>  -$this->mixin_totallines,
             );
-            
-            $less = new lessc(); // instantiate Less
-            
+
             // if production mode -> use cache
             if ($this->conf['in_production'] == true) {
                 // if compression is ON
