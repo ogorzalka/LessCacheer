@@ -16,7 +16,7 @@ Class CSSCompression_Control
 	 * @param (array) stats: Holds compression stats
 	 */ 
 	public $css = '';
-	public $mode = '';
+	public $mode = 'custom';
 	public $options = array();
 	public $stats = array();
 
@@ -48,6 +48,7 @@ Class CSSCompression_Control
 		'Combine',
 		'Organize',
 		'Cleanup',
+		'Setup',
 		'Compress',
 	);
 
@@ -123,11 +124,21 @@ Class CSSCompression_Control
 	}
 
 	/**
-	 * Cleans out class variables for next run
+	 * Resets options to their defaults, and flushes out variables
 	 *
 	 * @params none
 	 */
 	public function reset(){
+		$this->Option->reset();
+		$this->flush();
+	}
+
+	/**
+	 * Cleans out class variables for next run
+	 *
+	 * @params none
+	 */
+	public function flush(){
 		$this->css = '';
 		$this->stats = array(
 			'before' => array(
@@ -153,7 +164,7 @@ Class CSSCompression_Control
 	 */
 	public function compress( $css = NULL, $options = NULL ) {
 		// Reset and merge options
-		$this->reset();
+		$this->flush();
 		$this->Option->merge( $options );
 
 		// Initial stats
@@ -185,7 +196,7 @@ Class CSSCompression_Control
 			return $this->$class->access( $method, $args );
 		}
 		else {
-			throw new Exception( "Unknown Class Access - " . $class );
+			throw new CSSCompression_Exception( "Unknown Class Access - " . $class );
 		}
 	}
 };

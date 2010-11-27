@@ -85,6 +85,7 @@ Class CSSCompression_Option
 	 */ 
 	public function merge( $options = array() ) {
 		if ( $options && is_array( $options ) && count( $options ) ) {
+			$this->Control->mode = 'custom';
 			foreach ( $this->options as $key => $value ) {
 				if ( ! isset( $options[ $key ] ) ) {
 					continue;
@@ -130,7 +131,7 @@ Class CSSCompression_Option
 			return call_user_func_array( array( $this, $method ), $args );
 		}
 		else {
-			throw new Exception( "Unknown method in Color Class - " . $method );
+			throw new CSSCompression_Exception( "Unknown method in Color Class - " . $method );
 		}
 	}
 };

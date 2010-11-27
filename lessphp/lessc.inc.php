@@ -45,6 +45,7 @@ class lessc {
 	static private $dtypes = array('expression', 'variable', 'function', 'negative'); // types with delayed computation
 	static private $units = array(
 		'px', '%', 'in', 'cm', 'mm', 'em', 'ex', 'pt', 'pc', 'ms', 's', 'deg', 'gr');
+<<<<<<< HEAD:less/lessc.inc.php
 	
 	// public options
 	public $options = array(
@@ -54,6 +55,15 @@ class lessc {
 		'lineComment' => 1,
 	);
 	
+=======
+
+	// public options
+	public $options = array(
+	    'importDisabled' => false,
+	    'importDir' => array(''),
+    );
+
+>>>>>>> 4f434ac4e4c6831dddbc61a7545e915a4b903578:lessphp/lessc.inc.php
 	// compile chunk off the head of buffer
 	function chunk() {
 		if (empty($this->buffer)) return false;
@@ -220,8 +230,14 @@ class lessc {
 		// import statement
 		if ($this->import($url, $media)) {
 			if ($this->options['importDisabled']) return "/* import is disabled */\n";
+<<<<<<< HEAD:less/lessc.inc.php
             
 			foreach($this->options['importDir'] as $importDir) {
+=======
+			
+			foreach($this->options['importDir'] as $importDir) {
+
+>>>>>>> 4f434ac4e4c6831dddbc61a7545e915a4b903578:lessphp/lessc.inc.php
     			$full = $importDir.$url;
     			if ($this->fileExists($file = $full.'.less') || $this->fileExists($file = $full)) {
     				$this->addParsedFile($file);
@@ -315,7 +331,7 @@ class lessc {
 			// render sub blocks
 			foreach ($blocks as $b) {
 				$rtags = $this->multiplyTags(array($b[0]));
-				echo $this->compileBlock($rtags, $b[1]);
+				echo $this->compileBlock($rtags, $b[1], true);
 			}
 
 			return ob_get_clean();
@@ -818,17 +834,10 @@ class lessc {
 		else return array('list', $delim, $items);
 	}
 
-	function compileBlock($rtags, $env) {
-		// don't render functions
-		// todo: this shouldn't need to happen because multiplyTags prunes them, verify
-		/*
-		foreach ($rtags as $i => $tag) {
-			if (preg_match('/( |^)%/', $tag))
-				unset($rtags[$i]);
-		}
-		 */
+	function compileBlock($rtags, $env, $doSubBlocks = false) {
 		if (empty($rtags)) return '';
 
+		$children = array();
 		$props = 0;
 		// print all the visible properties
 		ob_start();
@@ -839,21 +848,35 @@ class lessc {
 			if (isset($value[0]) && $name{0} != $this->vPrefix && $name != '__args') {
 				echo $this->compileProperty($name, $value, 1)."\n";
 				$props += count($value);
+			} elseif ($doSubBlocks && !isset($value[0]) && $name{0} != $this->mPrefix) {
+				$this->push($env);
+				$new_tags = array();
+				foreach ($rtags as $tag) $new_tags[] = $tag.' '.$name;
+				$children[] = $this->compileBlock($new_tags, $value, true);
+				$this->pop();
 			}
 		}
 		$list = ob_get_clean();
+<<<<<<< HEAD:less/lessc.inc.php
 		if ($props == 0) return '';
 		
 		$lineComment = $this->options['lineComment'] + substr_count(substr($this->buffer, 0, $this->count), "\n");
 		$blockDecl = "/* line $lineComment */\n";
 		$blockDecl .= implode(", ", $rtags).' {';
+=======
+
+		$blockDecl = implode(", ", $rtags).' {';
+
+		$out = '';
+>>>>>>> 4f434ac4e4c6831dddbc61a7545e915a4b903578:lessphp/lessc.inc.php
 		if ($props > 1)
-			return $this->indent($blockDecl).$list.$this->indent('}');
-		else {
+			$out = $this->indent($blockDecl).$list.$this->indent('}');
+		elseif ($props == 1) {
 			$list = ' '.trim($list).' ';
-			return $this->indent($blockDecl.$list.'}');
+			$out = $this->indent($blockDecl.$list.'}');
 		}
 
+		return $out.implode('', $children);
 	}
 
 	// write a line a the proper indent
@@ -1171,9 +1194,9 @@ class lessc {
 	}
 
 	// push a new environment
-	function push() {
+	function push($base = null) {
 		$this->level++;
-		$this->env[] = array();
+		$this->env[] = is_null($base) ? array() : $base;
 	}
 
 	// pop environment off the stack
@@ -1328,6 +1351,7 @@ class lessc {
 		else $this->count = $where;
 		return true;
 	}
+<<<<<<< HEAD:less/lessc.inc.php
 	
 	function merge_options($a, $b) {
 		return array_merge((array)$a, (array)$b);
@@ -1337,6 +1361,17 @@ class lessc {
 	function parse($str = null,$options = array()) {
 		if ($str) $this->buffer = $str;
 		$this->options = $this->merge_options($this->options, $options);
+=======
+
+    function merge_options($a, $b) {
+	    return array_merge((array)$a, (array)$b);
+	}
+	
+	// parse and compile buffer
+	function parse($str = null, $opts) {
+		if ($str) $this->buffer = $str;		
+
+>>>>>>> 4f434ac4e4c6831dddbc61a7545e915a4b903578:lessphp/lessc.inc.php
 		$this->env = array();
 		$this->expandStack = array();
 		$this->indentLevel = 0;
@@ -1344,6 +1379,7 @@ class lessc {
 		$this->count = 0;
 		$this->line = $this->options['line_init'];
 		$this->level = 0;
+		$this->options = $this->merge_options($this->options, $opts);
 
 		$this->buffer = $this->removeComments($this->buffer);
 		$this->push(); // set up global scope
