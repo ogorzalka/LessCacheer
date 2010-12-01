@@ -19,6 +19,8 @@ Class LessCacheer
     public static $recache;
     public static $compression_id = '';
     public static $cached_filename = '';
+    public static $mixin_imported = 0;
+    public static $less; // less object
     public $headers;
     public $conf = array(
         'install_path' => '', 
@@ -26,7 +28,7 @@ Class LessCacheer
         'cache_mixins' => true, 
         'in_production' => true, 
         'cachetime' => 1314000, 
-        'use_compression' => false, 
+        'use_compression' => false,
         'less_options' => array(
             'importDir' => array()
         ),
@@ -143,15 +145,6 @@ Class LessCacheer
         exit;
     }
     
-    function insert_explode($sep, $str, $addition, $mode = 'before')
-    {
-        $explode = explode($sep, $str);
-        foreach ($explode as $e) {
-            $array_output[] = ($mode == 'before') ? $addition . $e : $e . $addition;
-        }
-        return $array_output;
-    }
-    
     function collect_lessfiles()
     {
         $lessfiles = '';
@@ -159,17 +152,12 @@ Class LessCacheer
         if (!$this->mixin_file = DataCache::Get("mixins", "mixin_file")) {
             $this->less_files['mixins'] = self::rglob($this->conf['base_path'] . $this->conf['mixins_path'] . '/*.less');
         }
+        $this->less_files['user'] = $this->f;
         
-        $this->less_files['user'] = $this->insert_explode(',', $this->f, $this->conf['origin_install']);
         // explode less files
         foreach ($this->less_files as $key => $less_files) {
-            foreach ($less_files as $f) {
+            foreach ((array)$less_files as $f) {
                 if (file_exists($f)) {
-                    if ($key == 'user') {
-                        if (!in_array(dirname($f) . '/', $this->conf['less_options']['importDir'])) {
-                            $this->conf['less_options']['importDir'][] = dirname($f) . '/';
-                        }
-                    }
                     $lessfiles .= file::cache($f, $key);
                 }
             }
@@ -245,9 +233,13 @@ Class LessCacheer
     }
     
     function less_to_css($input) {
-        $less = new lessc(); // instantiate Less
-        $less->importDir = $this->conf['less_options']['importDir']; // define import Directories
-        
+        $this->less = new lessc(); // instantiate Less
+        $this->less->importDir = $this->conf['less_options']['importDir']; // define import Directories
+        if (!$this->conf['in_production']) {
+        	$this->less->debug_info = true;
+        }
+		$this->less->addParsedFile($this->f);
+		
         // retrieve the main merged less file alias
         $cache_name = file::make_alias($this->f);
         
@@ -260,7 +252,7 @@ Class LessCacheer
 
         // if there's no cache file
         if (!$this->conf['in_production'] || !$parsed_css = DataCache::Get($cache_name, 'mainless')) {
-            $parsed_css = $less->parse($input); // parse the less file
+            $parsed_css = $this->less->parse($input); // parse the less file
             if ($this->conf['use_compression']) {
                 $CSSC             = new CSSCompression($parsed_css, $this->conf['compression_options']);
                 $parsed_css = $CSSC->css;
@@ -284,9 +276,6 @@ Class LessCacheer
             require $extend;
             $classname = str_replace('.class.php', '', basename($extend));
         }
-        
-        $this->f = $f; // this less files !
-
         try {
             $this->recache = false; // init of recache
             $this->conf    = $this->merge_options($this->conf, $conf); // make conf usable by all methods
@@ -294,6 +283,7 @@ Class LessCacheer
             // if compression is ON
             $this->compression_id = ($this->conf['use_compression']) ? md5(serialize($this->conf['compression_options'])) : 'nocompress';
             $this->generate_paths(); // generate path config
+            $this->f = $this->conf['origin_install'].$f; // this less files !
             $this->lessfiles = $this->collect_lessfiles(); // include every less you take !
             
             /**

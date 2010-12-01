@@ -1,11 +1,11 @@
-/**
- * CSS Compressor [VERSION] - Test Suite
- * [DATE]
- * Corey Hart @ http://www.codenothing.com
- *
- * Holds array of all unit tests needed to be done
- * on all methods possible.
- */
+ //
+ // CSS Compressor [VERSION]
+ // [DATE]
+ // Corey Hart @ http://www.codenothing.com
+ //
+
+ // Holds array of all unit tests needed to be done
+ // on all methods possible.
 {
 	// Numeric Handler
 	"Numeric": {
@@ -336,15 +336,11 @@
 			},
 			"first-child tree": {
 				"params": [ "a:first-child>a" ],
-				"expect": "a:first-child >a"
+				"expect": "a:first-child>a"
 			},
 			"first-child adds": {
 				"params": [ "a:first-child+a" ],
-				"expect": "a:first-child +a"
-			},
-			"first-child brace": {
-				"params": [ "a:first-child{" ],
-				"expect": "a:first-child {"
+				"expect": "a:first-child+a"
 			},
 			"first-child empty": {
 				"params": [ "a:first-child" ],
@@ -356,7 +352,7 @@
 			},
 			"multiple": {
 				"params": [ "a:hover>b:hover.test+pre.old:hover" ],
-				"expect": "a:hover >b:hover.test+pre.old:hover "
+				"expect": "a:hover>b:hover.test+pre.old:hover "
 			},
 			"nothing": {
 				"params": [ "a:hover.test" ],
@@ -375,7 +371,7 @@
 					[ "A:hover>B:hover.test+PRE.old:hover", "A:first-child B" ]
 				],
 				"join": "|",
-				"expect": "a:hover >b:hover.test+pre.old:hover |a:first-child b"
+				"expect": "a:hover>b:hover.test+pre.old:hover |a:first-child b"
 			}
 		}
 	},
@@ -954,6 +950,28 @@
 
 	// Trimming Handler
 	"Trim": {
+		// Stripping comments out from stylesheet
+		"comments": {
+			"basic": {
+				"params": [
+					"te/*abc*/st"
+				],
+				"expect": "test"
+			},
+			"escaped": {
+				"params": [
+					"te/*abc\\*/def*/st"
+				],
+				"expect": "test"
+			},
+			"in a string": {
+				"params": [
+					"t\"/*e\"/*ab\"c\\*/def*/st"
+				],
+				"expect": "t\"/*e\"st"
+			}
+		},
+
 		// Trimming down the stylesheet, removing all whitespace possible
 		"strip": {
 			"simple": {
@@ -981,7 +999,7 @@
 			// Single property with URL
 			"single": {
 				"params": [ "#one{background:url(http://www.example1.com?a=semi;);}" ],
-				"expect": "#one{background:url(http\\://www.example1.com?a=semi\\;);}"
+				"expect": "#one{background:url(http\\:\\/\\/www.example1.com?a=semi\\;);}"
 			},
 
 			// Many properties with URL
@@ -994,10 +1012,10 @@
 					"#four{background:url(http://www.example4.com?a=semi;);}"
 				],
 				"expect": [
-					"#one{background:url(http\\://www.example1.com?a=semi\\;);}",
-					"#two{background:url(http\\://www.example2.com?a=semi\\;);}",
-					"#three{background:url(http\\://www.example3.com?a=semi\\;);}",
-					"#four{background:url(http\\://www.example4.com?a=semi\\;);}"
+					"#one{background:url(http\\:\\/\\/www.example1.com?a=semi\\;);}",
+					"#two{background:url(http\\:\\/\\/www.example2.com?a=semi\\;);}",
+					"#three{background:url(http\\:\\/\\/www.example3.com?a=semi\\;);}",
+					"#four{background:url(http\\:\\/\\/www.example4.com?a=semi\\;);}"
 				]
 			}
 		},
@@ -1019,12 +1037,12 @@
 				],
 				"expect": [
 					"#red>div.today+b.old,body.broken,#wtf{",
-					"background: url(http\\://www.example1.com?a=semi\\;);",
+					"background: url(http\\:\\/\\/www.example1.com?a=semi\\;);",
 					"border: 1px solid red;",
 					"color: white;",
 					"}",
 					"#next{",
-					"background: url(http\\://www.example2.com?a=semi\\;);",
+					"background: url(http\\:\\/\\/www.example2.com?a=semi\\;);",
 					"}"
 				]
 			}

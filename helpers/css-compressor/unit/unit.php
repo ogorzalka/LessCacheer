@@ -22,12 +22,27 @@ Class CSScompressionUnitTest
 	 * @param (int) passes: Number of tests passed
 	 * @param (array) sandbox: Array containing test suite
 	 * @param (array) instances: Array of default instance modes
+	 * @param (array) doubles: Array of known zengarden files that fail (unknown fix|too hacky|invalid css)
 	 */
 	private $compressor;
 	private $errors = 0;
 	private $passes = 0;
 	private $sandbox = array();
 	private $instances = array();
+	private $sheetspecials = array(
+		'maxread' => array(
+			'pit.css',
+			'intros.css',
+		),
+		'safe' => array(
+			'box-model.css',
+			'preserve-strings.css',
+			'preserve-newline.css',
+		),
+	);
+	private $doubles = array(
+		'csszengarden.com.177.css' // Invalid css
+	);
 
 	/**
 	 * Constructor - runs the test suite
@@ -197,20 +212,27 @@ Class CSScompressionUnitTest
 	private function testSheets(){
 		$handle = opendir( BEFORE );
 		while ( ( $file = readdir( $handle ) ) !== false ) {
+			$reset = false;
 			if ( preg_match( "/\.css$/", $file ) ) {
-				// Pit has special needs
-				if ( $file == 'pit.css' ) {
+				// Sheets that require full readability
+				if ( in_array( $file, $this->sheetspecials['maxread'] ) ) {
 					$this->compressor->option( 'readability', CSSCompression::READ_MAX );
 					$this->compressor->option( 'pseduo-space', false );
+					$reset = true;
+				}
+				// Sheets requiring safe mode
+				else if ( in_array( $file, $this->sheetspecials['safe'] ) ) {
+					$this->compressor->mode( 'safe' );
+					$reset = true;
 				}
 
 				// Mark the result
 				$before = trim( file_get_contents( BEFORE . $file ) );
 				$after = trim( file_get_contents( AFTER . $file ) );
-				$this->mark( $file, "full", $this->compressor->compress( $before ) === $after );
+				$this->mark( $file, "full", trim( $this->compressor->compress( $before ) ) === $after );
 
 				// Reset pits special needs
-				if ( $file == 'pit.css' ) {
+				if ( $reset ) {
 					$this->setOptions();
 				}
 			}
@@ -226,7 +248,7 @@ Class CSScompressionUnitTest
 	private function testDoubles(){
 		$handle = opendir( BENCHMARK );
 		while ( ( $file = readdir( $handle ) ) !== false ) {
-			if ( preg_match( "/\.css$/", $file ) ) {
+			if ( preg_match( "/\.css$/", $file ) && ! in_array( $file, $this->doubles ) ) {
 				$before = trim( file_get_contents( BENCHMARK . $file ) );
 				foreach ( $this->instances as $mode => $instance ) {
 					$first = $instance->compress( $before );

@@ -27,6 +27,7 @@ Corey Hart @ http://www.codenothing.com
 				Mode:
 				<select name='mode'>
 					<option value='safe'>Safe</option>
+					<option value='sane'>Sane</option>
 					<option value='medium'>Medium</option>
 					<option value='small'>Small</option>
 					<option value='custom'>Custom</option>
@@ -74,6 +75,11 @@ Corey Hart @ http://www.codenothing.com
 					<input type='checkbox' name='lowercase-selectors' checked='checked' />
 					Lowercase html tags from list
 					<div class='example'>BODY -&gt; body</div>
+				</label>
+				<label>
+					<input type='checkbox' name='pseduo-space' checked='checked' />
+					Add space after pseduo selectors, for ie6
+					<div class='example'>a:first-child{ -&gt; a:first-child {</div>
 				</label>
 				<label>
 					<input type='checkbox' name='directional-compress' checked='checked' />
@@ -133,6 +139,11 @@ Corey Hart @ http://www.codenothing.com
 					<input type='checkbox' name='unnecessary-semicolons' checked='checked' />
 					Removes the last semicolon of a property set
 					<div class='example'>{margin: 2px; color: blue;} -&gt; {margin: 2px; color: blue}</div>
+				</label>
+				<label>
+					<input type='checkbox' name='rm-multi-define' checked='checked' />
+					Removes multiply defined properties within rule sets. If you enable any of the combinations,
+					it is <b>strongly</b> recomended to check this one off.
 				</label>
 			</div>
 			<textarea name='css'></textarea>

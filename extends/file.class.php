@@ -14,20 +14,21 @@ Class file extends LessCacheer
     
     function cache($input, $type = 'user', $force_recache = false)
     {
-        $alias_cache = self::make_alias($input); // path relative to the file
-        $basename    = basename($input); // filename
-        
+        $alias_cache     = self::make_alias($input); // path relative to the file
+        $basename        = basename($input); // filename
         $cached_filename = DataCache::getFilename($alias_cache, $basename);
-        
         if (self::modified($cached_filename) < self::modified($input) + $this->conf['cachetime']) {
             @unlink($cached_filename);
             $this->recache = true;
         }
-        
-        if (($this->conf['cache_mixins'] == false && $type == 'mixins') || ($this->conf['in_production'] == false && $type != 'mixins')) {
-            $data = file_get_contents($input) . "\n";
+        if ($type == 'mixins') {
+            if (!in_array(dirname($input).'/', $this->conf['less_options']['importDir'])) {
+                $this->conf['less_options']['importDir'][] = dirname($input).'/';
+            }
+            $data                                      = "@import '$basename';";
+            $this->mixin_imported++;
         } else if (!$data = DataCache::Get($alias_cache, $basename)) {
-            $data = file_get_contents($input) . "\n";
+            $data = file_get_contents($input);
             DataCache::Put($alias_cache, $basename, $this->conf['cachetime'], $data); // put data inside the cache
         }
         return $data;
