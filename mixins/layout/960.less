@@ -11,7 +11,7 @@
 
 @column_width = (@page_width / @column_count - @gutter_width * 2);
 
-@container() {
+@container {
 	margin-left: auto;
 	margin-right: auto;
 	width: @page_width;
@@ -20,12 +20,21 @@
 /* `Grid >> Global
 ----------------------------------------------------------------------------------------------------*/
 
-@grid(@n:0) {
+@grid(@n:0; @m:0) {
 	float: left;
 	display: inline;
-	margin-left: 10px;
-	margin-right: 10px;
-	width: ( ( @n - 1 ) * @gutter_width * 2 + (@n * @column_width));
+	margin-left: @gutter_width;
+	margin-right: @gutter_width;
+	width: ( ( @n - 1 ) * @gutter_width * 2 + (@n * @column_width))- @m;
+}
+
+@gridbox(@n:0; @p:5) {
+	float: left;
+	display: inline;
+	margin-left: @gutter_width;
+	margin-right: @gutter_width;
+	padding:@p;
+	width: ( ( @n - 1 ) * @gutter_width * 2 + (@n * @column_width)) - (2 * @p);
 }
 
 /* `Grid >> Children (Alpha ~ First, Omega ~ Last)
