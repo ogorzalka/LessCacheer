@@ -35,6 +35,7 @@ Class file extends LessCacheer
     }
     
     function get_contents($path) {
-        return file_get_contents($path);
+        $this->output = file_get_contents($path);
+        return $this;
     }
 }

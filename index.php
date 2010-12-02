@@ -10,10 +10,11 @@ Class LessCacheer
      */
     public static $f = ''; // requested less files to parse
     public static $cached_f = ''; // requested cached file
+    public static $input = '';
     public static $output = '';
     public static $lessfiles = '';
     public static $parsed_css = '';
-    public static $less_files = array(); // loaded css files
+    public static $less_files = array(); // loaded less files
     public static $less; // less object
     public static $debug_info = null;
     public $headers;
@@ -157,7 +158,6 @@ Class LessCacheer
     */
     function collect_lessfiles()
     {
-        $lessfiles                  = '';
         $this->less_files['mixins'] = self::rglob($this->conf['base_path'] . $this->conf['mixins_path'] . '/*.less');
         $this->less_files['user']   = $this->f;
         
@@ -165,11 +165,11 @@ Class LessCacheer
         foreach ($this->less_files as $key => $less_files) {
             foreach ((array) $less_files as $f) {
                 if (file_exists($f)) {
-                    $lessfiles .= file::get($key, $f);
+                    $this->input .= file::get($key, $f);
                 }
             }
         }
-        return $lessfiles;
+        return $this;
     }
     
     /*
@@ -224,18 +224,18 @@ Class LessCacheer
     /*
     let the magic ! less takes care of everything
     */
-    function less_to_css($input)
+    function less_to_css()
     {
         $this->less             = new lessc(); // instantiate Less
         $this->less->importDir  = $this->conf['less_options']['importDir']; // define import Directories
         $this->less->debug_info = $this->conf['debug_info'];
         $this->less->addParsedFile($this->f);
         
-        $parsed_css = $this->less->parse($input); // parse the less file
+        $this->output = $this->less->parse($this->input); // parse the less file
         
         if ($this->conf['use_compression']) {
-            $CSSC       = new CSSCompression($parsed_css, $this->conf['compression_options']);
-            $parsed_css = $CSSC->css;
+            $CSSC       = new CSSCompression($this->output, $this->conf['compression_options']);
+            $this->output = $CSSC->css;
         }
         
         if ($this->conf['debug_info']) {
@@ -254,9 +254,9 @@ Class LessCacheer
                 $this->log("     next recache : " . date(DATE_RFC822, $f['filemtime'] + $this->conf['cachetime']) . "\n");
             }
             $this->debug_info .= "-------------------------------------------------------------- */\n";
-            $parsed_css = $this->debug_info . $parsed_css;
+            $this->output = $this->debug_info . $this->output;
         }
-        return $parsed_css;
+        return $this;
     }
     
     /**
@@ -265,18 +265,18 @@ Class LessCacheer
      * @param $output What to display
      * @return void
      */
-    function render_css($output, $level = false) {
-        $length   = strlen($output);
-        $modified = ($this->conf['in_production']) ? file::modified($this->cached_f) : file::modified($this->f);
+    function render_css($level = false) {
+        $length   = strlen($this->output);
+        $modified = ($this->conf['in_production'] === true) ? file::modified($this->cached_f) : file::modified($this->f);
         $lifetime = ($this->conf['in_production'] === true) ? $this->conf['cachetime'] : 0;
         
         headers::generate($modified, $lifetime, $length);
         // gzip, zlib handler
-        $output = headers::set_compression($output, $level);
+        $this->output = headers::set_compression($this->output, $level);
         
         # Send the headers
         headers::send();
-        echo $output;
+        echo $this->output;
         exit;
     }
     /**
@@ -285,9 +285,9 @@ Class LessCacheer
      * @param $output What to display
      * @return void
      */
-    function format_css($output)
+    function format_css()
     {        
-        if ($this->conf['in_production']) {
+        if ($this->conf['in_production'] === true) {
             $path = '';
             foreach (explode('/', $this->conf['filecache_path']) as $folder) {
                 if ($folder != '' && !file_exists($path . $folder)) {
@@ -295,14 +295,14 @@ Class LessCacheer
                 }
                 $path .= $folder . '/';
             }
-            file_put_contents($this->cached_f, $output);
+            file_put_contents($this->cached_f, $this->output);
         }
         else {
             if (file_exists($this->cached_f)) {
                 unlink($this->cached_f);
             }
         }
-        return $output;
+        return $this;
     }
     
     function __construct($f)
@@ -322,19 +322,20 @@ Class LessCacheer
             $this->conf    = $this->merge_options($this->conf, $conf); // make conf usable by all methods
             
             // dev mode
-            $this->conf['use_compression'] = $this->conf['in_production'] ? $this->conf['use_compression'] : false;
-            $this->conf['debug_info']      = $this->conf['in_production'] ? false : $this->conf['debug_info'];
+            $this->conf['use_compression'] = ($this->conf['in_production']) === true ? $this->conf['use_compression'] : false;
+            $this->conf['debug_info']      = ($this->conf['in_production']) === true ? false : $this->conf['debug_info'];
             
             $this->generate_paths(); // generate path config
             if (file::need_to_recache()) {
                 $this->log("   Just recached !\n");
-                $this->lessfiles = $this->collect_lessfiles(); // include every less you take !
-                $this->output       = $this->less_to_css($this->lessfiles); // Parse the collected Less Files
-                $this->output       = $this->format_css($this->output);
+                $this->collect_lessfiles() // include every less you take !
+                     ->less_to_css() // convert less to css
+                     ->format_css() // last css formats
+                     ->render_css(); // print the final css
             } else {
-                $this->output = file::get_contents($this->cached_f);
+                file::get_contents($this->cached_f)
+                    ->render_css(); // print the cached css
             }
-            $this->render_css($this->output); // print the final css
         }
         /**
          * If any errors were encountered
