@@ -1,7 +1,6 @@
 <?php
 Class LessCacheer
 {
-    static $file_cache;
     /**
      * Any files that are found with find_file are stored here so that
      * any further requestes for the files are just given the path
