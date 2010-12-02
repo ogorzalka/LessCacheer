@@ -10,197 +10,80 @@ Class LessCacheer
      * @var array
      */
     public static $f = ''; // requested less files to parse
-    public static $css = '';
-    public static $mixin_file = '';
+    public static $cached_f = ''; // requested cached file
+    public static $output = '';
     public static $lessfiles = '';
     public static $parsed_css = '';
-    public static $mixin_files = array(); // loaded mixins
     public static $less_files = array(); // loaded css files
-    public static $recache;
-    public static $compression_id = '';
-    public static $cached_filename = '';
-    public static $mixin_imported = 0;
     public static $less; // less object
+    public static $debug_info = null;
     public $headers;
-    public $conf = array(
-        'install_path' => '', 
-        'mixins_path' => 'lessphp/mixins', 
-        'cache_mixins' => true, 
-        'in_production' => true, 
-        'cachetime' => 1314000, 
-        'use_compression' => false,
-        'less_options' => array(
-            'importDir' => array()
-        ),
-        'compression_options' => array(
-            // Converts long color names to short hex names
-            // (aliceblue -> #f0f8ff)
-            'color-long2hex' => true, 
-            // Converts rgb colors to hex
-            // (rgb(159,80,98) -> #9F5062, rgb(100%) -> #FFFFFF)
-            'color-rgb2hex' => true, 
-            // Converts long hex codes to short color names (#f5f5dc -> beige)
-            // Only works on latest browsers, careful when using
-            'color-hex2shortcolor' => false, 
-            // Converts long hex codes to short hex codes
-            // (#44ff11 -> #4f1)
-            'color-hex2shorthex' => true, 
-            // Converts font-weight names to numbers
-            // (bold -> 700)
-            'fontweight2num' => true, 
-            // Removes zero decimals and 0 units
-            // (15.0px -> 15px || 0px -> 0)
-            'format-units' => true, 
-            // Lowercases html tags from list
-            // (BODY -> body)
-            'lowercase-selectors' => true, 
-            // Add space after pseduo selectors, for ie6
-            // (a:first-child{ -> a:first-child {)
-            'pseudo-space' => false, 
-            // Compresses single defined multi-directional properties
-            // (margin: 15px 25px 15px 25px -> margin:15px 25px)
-            'directional-compress' => true, 
-            // Combines multiply defined selectors
-            // (p{color:blue;} p{font-size:12pt} -> p{color:blue;font-size:12pt;})
-            'multiple-selectors' => true, 
-            // Combines selectors with same details
-            // (p{color:blue;} a{color:blue;} -> p,a{color:blue;})
-            'multiple-details' => true, 
-            // Combines color/style/width properties
-            // (border-style:dashed;border-color:black;border-width:4px; -> border:4px dashed black)
-            'csw-combine' => true, 
-            // Combines cue/pause properties
-            // (cue-before: url(before.au); cue-after: url(after.au) -> cue:url(before.au) url(after.au))
-            'auralcp-combine' => true, 
-            // Combines margin/padding directionals
-            // (margin-top:10px;margin-right:5px;margin-bottom:4px;margin-left:1px; -> margin:10px 5px 4px 1px;)
-            'mp-combine' => true, 
-            // Combines border directionals
-            // (border-top|right|bottom|left:1px solid black -> border:1px solid black)
-            'border-combine' => true, 
-            // Combines font properties
-            // (font-size:12pt; font-family: arial; -> font:12pt arial)
-            'font-combine' => true, 
-            // Combines background properties
-            // (background-color: black; background-image: url(bgimg.jpeg); -> background:black url(bgimg.jpeg))
-            'background-combine' => true, 
-            // Combines list-style properties
-            // (list-style-type: round; list-style-position: outside -> list-style:round outside)
-            'list-combine' => true, 
-            // Removes the last semicolon of a property set
-            // ({margin: 2px; color: blue;} -> {margin: 2px; color: blue})
-            'unnecessary-semicolons' => true, 
-            // Readibility of Compressed Output, Defaults to none
-            'readability' => 3
-        )
-    );
+    public $conf = array('install_path' => '', 'mixins_path' => 'lessphp/mixins', 'cache_path' => 'cache', 'debug_info' => true, // display original line and less files within Fireless addons for Firefox
+        'in_production' => true, 'cachetime' => 1314000, 'use_compression' => false, 'less_options' => array('importDir' => array()), 'compression_options' => array(
+    // Converts long color names to short hex names
+    // (aliceblue -> #f0f8ff)
+        'color-long2hex' => true, 
+    // Converts rgb colors to hex
+    // (rgb(159,80,98) -> #9F5062, rgb(100%) -> #FFFFFF)
+        'color-rgb2hex' => true, 
+    // Converts long hex codes to short color names (#f5f5dc -> beige)
+    // Only works on latest browsers, careful when using
+        'color-hex2shortcolor' => false, 
+    // Converts long hex codes to short hex codes
+    // (#44ff11 -> #4f1)
+        'color-hex2shorthex' => true, 
+    // Converts font-weight names to numbers
+    // (bold -> 700)
+        'fontweight2num' => true, 
+    // Removes zero decimals and 0 units
+    // (15.0px -> 15px || 0px -> 0)
+        'format-units' => true, 
+    // Lowercases html tags from list
+    // (BODY -> body)
+        'lowercase-selectors' => true, 
+    // Add space after pseduo selectors, for ie6
+    // (a:first-child{ -> a:first-child {)
+        'pseudo-space' => false, 
+    // Compresses single defined multi-directional properties
+    // (margin: 15px 25px 15px 25px -> margin:15px 25px)
+        'directional-compress' => true, 
+    // Combines multiply defined selectors
+    // (p{color:blue;} p{font-size:12pt} -> p{color:blue;font-size:12pt;})
+        'multiple-selectors' => true, 
+    // Combines selectors with same details
+    // (p{color:blue;} a{color:blue;} -> p,a{color:blue;})
+        'multiple-details' => true, 
+    // Combines color/style/width properties
+    // (border-style:dashed;border-color:black;border-width:4px; -> border:4px dashed black)
+        'csw-combine' => true, 
+    // Combines cue/pause properties
+    // (cue-before: url(before.au); cue-after: url(after.au) -> cue:url(before.au) url(after.au))
+        'auralcp-combine' => true, 
+    // Combines margin/padding directionals
+    // (margin-top:10px;margin-right:5px;margin-bottom:4px;margin-left:1px; -> margin:10px 5px 4px 1px;)
+        'mp-combine' => true, 
+    // Combines border directionals
+    // (border-top|right|bottom|left:1px solid black -> border:1px solid black)
+        'border-combine' => true, 
+    // Combines font properties
+    // (font-size:12pt; font-family: arial; -> font:12pt arial)
+        'font-combine' => true, 
+    // Combines background properties
+    // (background-color: black; background-image: url(bgimg.jpeg); -> background:black url(bgimg.jpeg))
+        'background-combine' => true, 
+    // Combines list-style properties
+    // (list-style-type: round; list-style-position: outside -> list-style:round outside)
+        'list-combine' => true, 
+    // Removes the last semicolon of a property set
+    // ({margin: 2px; color: blue;} -> {margin: 2px; color: blue})
+        'unnecessary-semicolons' => true, 
+    // Readibility of Compressed Output, Defaults to none
+        'readability' => 3));
     
     
-    /**
-     * Include paths
-     *
-     * These are used for finding files on the system. Rather than
-     * using PHP's built-in include paths, we just store the paths
-     * in this array and use the find_file function to locate it.
-     *
-     * @var array
-     */
-    
-    static function rglob($pattern, $flags = 0, $path = '')
-    {
-        if (!$path && ($dir = dirname($pattern)) != '.') {
-            if ($dir == '\\' || $dir == '/')
-                $dir = '';
-            return self::rglob(basename($pattern), $flags, $dir . '/');
-        }
-        $paths = glob($path . '*', GLOB_ONLYDIR | GLOB_NOSORT);
-        $files = glob($path . $pattern, $flags);
-        if (is_array($paths) && is_array($files)) {
-            foreach ($paths as $p)
-                $files = array_merge($files, self::rglob($pattern, $flags, $p . '/'));
-        }
-        return is_array($files) ? $files : array();
-    }
-    
-    /**
-     * Renders the CSS
-     *
-     * @param $output What to display
-     * @return void
-     */
-    function render_css($output, $level = false)
-    {
-        $length = strlen($output);
-        $modified = ($this->conf['in_production']) ? file::modified($this->cached_filename) : file::modified($this->less_files['user'][0]);
-        $lifetime = ($this->conf['in_production'] === true) ? $this->conf['cachetime'] : 0;
-
-        headers::generate($modified, $lifetime, $length);
-        // gzip, zlib handler
-        $output = headers::set_compression($output, $level);
-        
-        # Send the headers
-        headers::send();
-        
-        echo $output;
-        exit;
-    }
-    
-    function collect_lessfiles()
-    {
-        $lessfiles = '';
-        // mixins import
-        if (!$this->mixin_file = DataCache::Get("mixins", "mixin_file")) {
-            $this->less_files['mixins'] = self::rglob($this->conf['base_path'] . $this->conf['mixins_path'] . '/*.less');
-        }
-        $this->less_files['user'] = $this->f;
-        
-        // explode less files
-        foreach ($this->less_files as $key => $less_files) {
-            foreach ((array)$less_files as $f) {
-                if (file_exists($f)) {
-                    $lessfiles .= file::cache($f, $key);
-                }
-            }
-        }
-        return $lessfiles;
-    }
-    
-    function generate_paths()
-    {
-        $sapi = 'undefined';
-        if (!strstr($_SERVER['PHP_SELF'], $_SERVER['SCRIPT_NAME']) && ($sapi = @php_sapi_name()) == 'cgi') {
-            $script_name = $_SERVER['PHP_SELF'];
-        } else {
-            $script_name = $_SERVER['SCRIPT_NAME'];
-        }
-        $a = explode("/" . $this->conf['install_path'], str_replace("\\", "/", dirname($script_name)));
-        if (count($a) > 1)
-            array_pop($a);
-        $url = implode($this->conf['install_path'], $a);
-        reset($a);
-        $a = explode($this->conf['install_path'], str_replace("\\", "/", dirname(__FILE__)));
-        if (count($a) > 1)
-            array_pop($a);
-        $pth = implode($this->conf['install_path'], $a);
-        unset($a);
-        $this->conf['base_url']       = $url . (substr($url, -1) != "/" ? "/" : "");
-        $this->conf['base_path']      = $pth . (substr($pth, -1) != "/" && substr($pth, -1) != "\\" ? "/" : "");
-        //$this->conf['origin_path'] = 
-        $this->conf['folder_install'] = str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->conf['base_path']);
-        
-        $this->conf['origin_install'] = (in_array($this->conf['folder_install'], array(
-            '/',
-            ''
-        ))) ? $this->conf['base_path'] : str_replace($this->conf['folder_install'], '', $this->conf['base_path']);
-        ;
-        
-        // assign site_url
-        $this->conf['site_url'] = 'http://';
-        $this->conf['site_url'] .= $_SERVER['HTTP_HOST'];
-        $this->conf['site_url'] = str_replace(':' . $_SERVER['SERVER_PORT'], '', $this->conf['site_url']); // remove port from HTTP_HOST  
-        $this->conf['site_url'] .= $this->conf['base_url'];
-    }
-    
+    /*
+    Merge user-defined option with default configuration
+    */
     function merge_options($user_conf)
     {
         $arrays = func_get_args();
@@ -232,65 +115,227 @@ Class LessCacheer
         return $base;
     }
     
-    function less_to_css($input) {
-        $this->less = new lessc(); // instantiate Less
-        $this->less->importDir = $this->conf['less_options']['importDir']; // define import Directories
-        if (!$this->conf['in_production']) {
-        	$this->less->debug_info = true;
+    /*
+    add debug infos
+    */
+    function log($str)
+    {
+        if (empty($this->debug_info)) {
+            $this->debug_info = "/* --------------------------------------------------------------\n\n";
+            $this->debug_info .= "                            Debug Infos\n\n";
         }
-		$this->less->addParsedFile($this->f);
-		
-        // retrieve the main merged less file alias
-        $cache_name = file::make_alias($this->f);
-        
-        $this->cached_filename = DataCache::getFilename($cache_name, 'mainless'); // retrieve the cached filename
-        
-        // if we need to cache again, we unlink the previous cached file
-        if ($this->recache == true) {
-            @unlink($this->cached_filename);
+        $this->debug_info .= $str . "\n";
+    }
+    
+    /**
+     * Include paths
+     *
+     * These are used for finding files on the system. Rather than
+     * using PHP's built-in include paths, we just store the paths
+     * in this array and use the find_file function to locate it.
+     *
+     * @var array
+     */
+    
+    static function rglob($pattern, $flags = 0, $path = '')
+    {
+        if (!$path && ($dir = dirname($pattern)) != '.') {
+            if ($dir == '\\' || $dir == '/')
+                $dir = '';
+            return self::rglob(basename($pattern), $flags, $dir . '/');
         }
-
-        // if there's no cache file
-        if (!$this->conf['in_production'] || !$parsed_css = DataCache::Get($cache_name, 'mainless')) {
-            $parsed_css = $this->less->parse($input); // parse the less file
-            if ($this->conf['use_compression']) {
-                $CSSC             = new CSSCompression($parsed_css, $this->conf['compression_options']);
-                $parsed_css = $CSSC->css;
+        $paths = glob($path . '*', GLOB_ONLYDIR | GLOB_NOSORT);
+        $files = glob($path . $pattern, $flags);
+        if (is_array($paths) && is_array($files)) {
+            foreach ($paths as $p)
+                $files = array_merge($files, self::rglob($pattern, $flags, $p . '/'));
+        }
+        return is_array($files) ? $files : array();
+    }
+    
+    /*
+    Find need less files
+    */
+    function collect_lessfiles()
+    {
+        $lessfiles                  = '';
+        $this->less_files['mixins'] = self::rglob($this->conf['base_path'] . $this->conf['mixins_path'] . '/*.less');
+        $this->less_files['user']   = $this->f;
+        
+        // explode less files
+        foreach ($this->less_files as $key => $less_files) {
+            foreach ((array) $less_files as $f) {
+                if (file_exists($f)) {
+                    $lessfiles .= file::get($key, $f);
+                }
             }
-            if ($this->conf['in_production']) {
-                DataCache::Put($cache_name, 'mainless', $this->conf['cachetime'], $parsed_css); // put data inside the cache
+        }
+        return $lessfiles;
+    }
+    
+    /*
+    generated every useful paths
+    */
+    function generate_paths()
+    {
+        $sapi = 'undefined';
+        if (!strstr($_SERVER['PHP_SELF'], $_SERVER['SCRIPT_NAME']) && ($sapi = @php_sapi_name()) == 'cgi') {
+            $script_name = $_SERVER['PHP_SELF'];
+        } else {
+            $script_name = $_SERVER['SCRIPT_NAME'];
+        }
+        $a = explode("/" . $this->conf['install_path'], str_replace("\\", "/", dirname($script_name)));
+        if (count($a) > 1)
+            array_pop($a);
+        $url = implode($this->conf['install_path'], $a);
+        reset($a);
+        $a = explode($this->conf['install_path'], str_replace("\\", "/", dirname(__FILE__)));
+        if (count($a) > 1)
+            array_pop($a);
+        $pth = implode($this->conf['install_path'], $a);
+        unset($a);
+        $this->conf['base_url']       = $url . (substr($url, -1) != "/" ? "/" : "");
+        $this->conf['base_path']      = $pth . (substr($pth, -1) != "/" && substr($pth, -1) != "\\" ? "/" : "");
+        $this->conf['folder_install'] = str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->conf['base_path']);
+        
+        $this->conf['origin_install'] = (in_array($this->conf['folder_install'], array(
+            '/',
+            ''
+        ))) ? $this->conf['base_path'] : str_replace($this->conf['folder_install'], '', $this->conf['base_path']);
+        
+        $this->f = $this->conf['origin_install'] . $this->f; // this less files !
+        
+        // target cached path
+        $this->conf['filecache_path'] = $this->conf['cache_path'] . str_replace(array(
+            $this->conf['origin_install'],
+            basename($this->f)
+        ), array(
+            $this->conf['base_url'] . $this->conf['install_path'],
+            ''
+        ), $this->f);
+        $this->cached_f               = $this->conf['filecache_path'] . str_replace('.less', '.css', basename($this->f)); // target main cached css
+        
+        // assign site_url
+        $this->conf['site_url'] = 'http://';
+        $this->conf['site_url'] .= $_SERVER['HTTP_HOST'];
+        $this->conf['site_url'] = str_replace(':' . $_SERVER['SERVER_PORT'], '', $this->conf['site_url']); // remove port from HTTP_HOST  
+        $this->conf['site_url'] .= $this->conf['base_url'];
+    }
+    
+    /*
+    let the magic ! less takes care of everything
+    */
+    function less_to_css($input)
+    {
+        $this->less             = new lessc(); // instantiate Less
+        $this->less->importDir  = $this->conf['less_options']['importDir']; // define import Directories
+        $this->less->debug_info = $this->conf['debug_info'];
+        $this->less->addParsedFile($this->f);
+        
+        $parsed_css = $this->less->parse($input); // parse the less file
+        
+        if ($this->conf['use_compression']) {
+            $CSSC       = new CSSCompression($parsed_css, $this->conf['compression_options']);
+            $parsed_css = $CSSC->css;
+        }
+        
+        if ($this->conf['debug_info']) {
+            $this->log("   Parsed files :\n");
+            foreach ($this->less->allParsedFiles() as $key => $f) {
+                $this->log("   * {$key}");
+                if ($mixin = in_array(str_replace('\\', '/', $key), $this->less_files['mixins'])) {
+                    $this->log("     type : auto-imported mixin");
+                } else if ($f['parent'] != null) {
+                    $this->log("     type : user-imported less file");
+                    $this->log("     imported by : {$f['parent']}");
+                } else {
+                    $this->log("     type : main less file");
+                }
+                $this->log("     last modification : " . date(DATE_RFC822, $f['filemtime']));
+                $this->log("     next recache : " . date(DATE_RFC822, $f['filemtime'] + $this->conf['cachetime']) . "\n");
             }
+            $this->debug_info .= "-------------------------------------------------------------- */\n";
+            $parsed_css = $this->debug_info . $parsed_css;
         }
         return $parsed_css;
     }
     
+    /**
+     * Return the CSS
+     *
+     * @param $output What to display
+     * @return void
+     */
+    function render_css($output, $level = false) {
+        $length   = strlen($output);
+        $modified = ($this->conf['in_production']) ? file::modified($this->cached_f) : file::modified($this->f);
+        $lifetime = ($this->conf['in_production'] === true) ? $this->conf['cachetime'] : 0;
+        
+        headers::generate($modified, $lifetime, $length);
+        // gzip, zlib handler
+        $output = headers::set_compression($output, $level);
+        
+        # Send the headers
+        headers::send();
+        echo $output;
+        exit;
+    }
+    /**
+     * Renders the CSS
+     *
+     * @param $output What to display
+     * @return void
+     */
+    function format_css($output)
+    {        
+        if ($this->conf['in_production']) {
+            $path = '';
+            foreach (explode('/', $this->conf['filecache_path']) as $folder) {
+                if ($folder != '' && !file_exists($path . $folder)) {
+                    mkdir($path . $folder, 0777);
+                }
+                $path .= $folder . '/';
+            }
+            file_put_contents($this->cached_f, $output);
+        }
+        else {
+            if (file_exists($this->cached_f)) {
+                unlink($this->cached_f);
+            }
+        }
+        return $output;
+    }
+    
     function __construct($f)
     {
+        $this->f = $f;
         require('config.inc.php');
         require 'lessphp/lessc.inc.php';
-        require 'helpers/css-compressor/src/CSSCompression.inc';
         
         // auto include extends
-        $extends = self::rglob('extends/*.class.php');
+        $extends = self::rglob('extends/*.inc');
         foreach ($extends as $extend) {
             require $extend;
-            $classname = str_replace('.class.php', '', basename($extend));
         }
+        
         try {
             $this->recache = false; // init of recache
             $this->conf    = $this->merge_options($this->conf, $conf); // make conf usable by all methods
-            // if production mode -> use cache
-            // if compression is ON
-            $this->compression_id = ($this->conf['use_compression']) ? md5(serialize($this->conf['compression_options'])) : 'nocompress';
-            $this->generate_paths(); // generate path config
-            $this->f = $this->conf['origin_install'].$f; // this less files !
-            $this->lessfiles = $this->collect_lessfiles(); // include every less you take !
             
-            /**
-             * Parse the collected Less Files
-             */
-            $this->css = $this->less_to_css($this->lessfiles);
-            $this->render_css($this->css); // print the final css
+            // dev mode
+            $this->conf['use_compression'] = $this->conf['in_production'] ? $this->conf['use_compression'] : false;
+            $this->conf['debug_info']      = $this->conf['in_production'] ? false : $this->conf['debug_info'];
+            
+            $this->generate_paths(); // generate path config
+            if (file::need_to_recache()) {
+                $this->log("   Just recached !\n");
+                $this->lessfiles = $this->collect_lessfiles(); // include every less you take !
+                $this->output       = $this->less_to_css($this->lessfiles); // Parse the collected Less Files
+                $this->output       = $this->format_css($this->output);
+            } else {
+                $this->output = file::get_contents($this->cached_f);
+            }
+            $this->render_css($this->output); // print the final css
         }
         /**
          * If any errors were encountered
