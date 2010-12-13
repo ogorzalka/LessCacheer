@@ -17,8 +17,8 @@ Class LessCacheer
     public static $less_files = array(); // loaded less files
     public static $less; // less object
     public static $debug_info = null;
-    public $headers;
-    public $conf = array('install_path' => '', 'mixins_path' => 'lessphp/mixins', 'cache_path' => 'cache', 'debug_info' => true, // display original line and less files within Fireless addons for Firefox
+    public static $headers;
+    public static $conf = array('install_path' => '', 'mixins_path' => 'lessphp/mixins', 'cache_path' => 'cache', 'debug_info' => true, // display original line and less files within Fireless addons for Firefox
         'in_production' => true, 'cachetime' => 1314000, 'use_compression' => false, 'less_options' => array('importDir' => array()), 'compression_options' => array(
     // Converts long color names to short hex names
     // (aliceblue -> #f0f8ff)
@@ -120,11 +120,11 @@ Class LessCacheer
     */
     function log($str)
     {
-        if (empty($this->debug_info)) {
-            $this->debug_info = "/* --------------------------------------------------------------\n\n";
-            $this->debug_info .= "                            Debug Infos\n\n";
+        if (empty(self::$debug_info)) {
+            self::$debug_info = "/* --------------------------------------------------------------\n\n";
+            self::$debug_info .= "                            Debug Infos\n\n";
         }
-        $this->debug_info .= $str . "\n";
+        self::$debug_info .= $str . "\n";
     }
     
     /**
@@ -158,14 +158,14 @@ Class LessCacheer
     */
     function collect_lessfiles()
     {
-        $this->less_files['mixins'] = self::rglob($this->conf['base_path'] . $this->conf['mixins_path'] . '/*.less');
-        $this->less_files['user']   = $this->f;
+        self::$less_files['mixins'] = self::rglob(self::$conf['base_path'] . self::$conf['mixins_path'] . '/*.less');
+        self::$less_files['user']   = self::$f;
         
         // explode less files
-        foreach ($this->less_files as $key => $less_files) {
+        foreach (self::$less_files as $key => $less_files) {
             foreach ((array) $less_files as $f) {
                 if (file_exists($f)) {
-                    $this->input .= file::get($key, $f);
+                    self::$input .= file::get($key, $f);
                 }
             }
         }
@@ -183,42 +183,42 @@ Class LessCacheer
         } else {
             $script_name = $_SERVER['SCRIPT_NAME'];
         }
-        $a = explode("/" . $this->conf['install_path'], str_replace("\\", "/", dirname($script_name)));
+        $a = explode("/" . self::$conf['install_path'], str_replace("\\", "/", dirname($script_name)));
         if (count($a) > 1)
             array_pop($a);
-        $url = implode($this->conf['install_path'], $a);
+        $url = implode(self::$conf['install_path'], $a);
         reset($a);
-        $a = explode($this->conf['install_path'], str_replace("\\", "/", dirname(__FILE__)));
+        $a = explode(self::$conf['install_path'], str_replace("\\", "/", dirname(__FILE__)));
         if (count($a) > 1)
             array_pop($a);
-        $pth = implode($this->conf['install_path'], $a);
+        $pth = implode(self::$conf['install_path'], $a);
         unset($a);
-        $this->conf['base_url']       = $url . (substr($url, -1) != "/" ? "/" : "");
-        $this->conf['base_path']      = $pth . (substr($pth, -1) != "/" && substr($pth, -1) != "\\" ? "/" : "");
-        $this->conf['folder_install'] = str_replace($_SERVER['DOCUMENT_ROOT'], '', $this->conf['base_path']);
+        self::$conf['base_url']       = $url . (substr($url, -1) != "/" ? "/" : "");
+        self::$conf['base_path']      = $pth . (substr($pth, -1) != "/" && substr($pth, -1) != "\\" ? "/" : "");
+        self::$conf['folder_install'] = str_replace($_SERVER['DOCUMENT_ROOT'], '', self::$conf['base_path']);
         
-        $this->conf['origin_install'] = (in_array($this->conf['folder_install'], array(
+        self::$conf['origin_install'] = (in_array(self::$conf['folder_install'], array(
             '/',
             ''
-        ))) ? $this->conf['base_path'] : str_replace($this->conf['folder_install'], '', $this->conf['base_path']);
+        ))) ? self::$conf['base_path'] : str_replace(self::$conf['folder_install'], '', self::$conf['base_path']);
         
-        $this->f = $this->conf['origin_install'] . $this->f; // this less files !
+        self::$f = self::$conf['origin_install'] . self::$f; // this less files !
         
         // target cached path
-        $this->conf['filecache_path'] = $this->conf['cache_path'] . str_replace(array(
-            $this->conf['origin_install'],
-            basename($this->f)
+        self::$conf['filecache_path'] = self::$conf['cache_path'] . str_replace(array(
+            self::$conf['origin_install'],
+            basename(self::$f)
         ), array(
-            $this->conf['base_url'] . $this->conf['install_path'],
+            self::$conf['base_url'] . self::$conf['install_path'],
             ''
-        ), $this->f);
-        $this->cached_f               = $this->conf['filecache_path'] . str_replace('.less', '.css', basename($this->f)); // target main cached css
+        ), self::$f);
+        self::$cached_f               = self::$conf['filecache_path'] . str_replace('.less', '.css', basename(self::$f)); // target main cached css
         
         // assign site_url
-        $this->conf['site_url'] = 'http://';
-        $this->conf['site_url'] .= $_SERVER['HTTP_HOST'];
-        $this->conf['site_url'] = str_replace(':' . $_SERVER['SERVER_PORT'], '', $this->conf['site_url']); // remove port from HTTP_HOST  
-        $this->conf['site_url'] .= $this->conf['base_url'];
+        self::$conf['site_url'] = 'http://';
+        self::$conf['site_url'] .= $_SERVER['HTTP_HOST'];
+        self::$conf['site_url'] = str_replace(':' . $_SERVER['SERVER_PORT'], '', self::$conf['site_url']); // remove port from HTTP_HOST  
+        self::$conf['site_url'] .= self::$conf['base_url'];
     }
     
     /*
@@ -226,23 +226,23 @@ Class LessCacheer
     */
     function less_to_css()
     {
-        $this->less             = new lessc(); // instantiate Less
-        $this->less->importDir  = $this->conf['less_options']['importDir']; // define import Directories
-        $this->less->debug_info = $this->conf['debug_info'];
-        $this->less->addParsedFile($this->f);
+        self::$less             = new lessc(); // instantiate Less
+        self::$less->importDir  = self::$conf['less_options']['importDir']; // define import Directories
+        self::$less->debug_info = self::$conf['debug_info'];
+        self::$less->addParsedFile(self::$f);
         
-        $this->output = $this->less->parse($this->input); // parse the less file
+        self::$output = self::$less->parse(self::$input); // parse the less file
         
-        if ($this->conf['use_compression']) {
-            $CSSC       = new CSSCompression($this->output, $this->conf['compression_options']);
-            $this->output = $CSSC->css;
+        if (self::$conf['use_compression']) {
+            $CSSC       = new CSSCompression(self::$output, self::$conf['compression_options']);
+            self::$output = $CSSC->css;
         }
         
-        if ($this->conf['debug_info']) {
+        if (self::$conf['debug_info']) {
             $this->log("   Parsed files :\n");
-            foreach ($this->less->allParsedFiles() as $key => $f) {
+            foreach (self::$less->allParsedFiles() as $key => $f) {
                 $this->log("   * {$key}");
-                if ($mixin = in_array(str_replace('\\', '/', $key), $this->less_files['mixins'])) {
+                if ($mixin = in_array(str_replace('\\', '/', $key), self::$less_files['mixins'])) {
                     $this->log("     type : auto-imported mixin");
                 } else if ($f['parent'] != null) {
                     $this->log("     type : user-imported less file");
@@ -251,10 +251,10 @@ Class LessCacheer
                     $this->log("     type : main less file");
                 }
                 $this->log("     last modification : " . date(DATE_RFC822, $f['filemtime']));
-                $this->log("     next recache : " . date(DATE_RFC822, $f['filemtime'] + $this->conf['cachetime']) . "\n");
+                $this->log("     next recache : " . date(DATE_RFC822, $f['filemtime'] + self::$conf['cachetime']) . "\n");
             }
-            $this->debug_info .= "-------------------------------------------------------------- */\n";
-            $this->output = $this->debug_info . $this->output;
+            self::$debug_info .= "-------------------------------------------------------------- */\n";
+            self::$output = self::$debug_info . self::$output;
         }
         return $this;
     }
@@ -266,17 +266,17 @@ Class LessCacheer
      * @return void
      */
     function render_css($level = false) {
-        $length   = strlen($this->output);
-        $modified = ($this->conf['in_production'] === true) ? file::modified($this->cached_f) : file::modified($this->f);
-        $lifetime = ($this->conf['in_production'] === true) ? $this->conf['cachetime'] : 0;
+        $length   = strlen(self::$output);
+        $modified = (self::$conf['in_production'] === true) ? file::modified(self::$cached_f) : file::modified(self::$f);
+        $lifetime = (self::$conf['in_production'] === true) ? self::$conf['cachetime'] : 0;
         
         headers::generate($modified, $lifetime, $length);
         // gzip, zlib handler
-        $this->output = headers::set_compression($this->output, $level);
+        self::$output = headers::set_compression(self::$output, $level);
         
         # Send the headers
         headers::send();
-        echo $this->output;
+        echo self::$output;
         exit;
     }
     /**
@@ -287,19 +287,19 @@ Class LessCacheer
      */
     function format_css()
     {        
-        if ($this->conf['in_production'] === true) {
+        if (self::$conf['in_production'] === true) {
             $path = '';
-            foreach (explode('/', $this->conf['filecache_path']) as $folder) {
+            foreach (explode('/', self::$conf['filecache_path']) as $folder) {
                 if ($folder != '' && !file_exists($path . $folder)) {
                     mkdir($path . $folder, 0777);
                 }
                 $path .= $folder . '/';
             }
-            file_put_contents($this->cached_f, $this->output);
+            file_put_contents(self::$cached_f, self::$output);
         }
         else {
-            if (file_exists($this->cached_f)) {
-                unlink($this->cached_f);
+            if (file_exists(self::$cached_f)) {
+                unlink(self::$cached_f);
             }
         }
         return $this;
@@ -307,7 +307,7 @@ Class LessCacheer
     
     function __construct($f)
     {
-        $this->f = $f;
+        self::$f = $f;
         require('config.inc.php');
         require 'lessphp/lessc.inc.php';
         
@@ -319,11 +319,11 @@ Class LessCacheer
         
         try {
             $this->recache = false; // init of recache
-            $this->conf    = $this->merge_options($this->conf, $conf); // make conf usable by all methods
+            self::$conf    = $this->merge_options(self::$conf, $conf); // make conf usable by all methods
             
             // dev mode
-            $this->conf['use_compression'] = ($this->conf['in_production']) === true ? $this->conf['use_compression'] : false;
-            $this->conf['debug_info']      = ($this->conf['in_production']) === true ? false : $this->conf['debug_info'];
+            self::$conf['use_compression'] = (self::$conf['in_production']) === true ? self::$conf['use_compression'] : false;
+            self::$conf['debug_info']      = (self::$conf['in_production']) === true ? false : self::$conf['debug_info'];
             
             $this->generate_paths(); // generate path config
             if (file::need_to_recache()) {
@@ -333,7 +333,7 @@ Class LessCacheer
                      ->format_css() // last css formats
                      ->render_css(); // print the final css
             } else {
-                file::get_contents($this->cached_f)
+                file::get_contents(self::$cached_f)
                     ->render_css(); // print the cached css
             }
         }

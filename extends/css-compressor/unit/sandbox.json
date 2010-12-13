@@ -1,11 +1,11 @@
- //
- // CSS Compressor [VERSION]
- // [DATE]
- // Corey Hart @ http://www.codenothing.com
- //
-
- // Holds array of all unit tests needed to be done
- // on all methods possible.
+/**
+ * CSS Compressor [VERSION]
+ * [DATE]
+ * Corey Hart @ http://www.codenothing.com
+ *
+ * Holds array of all unit tests needed to be done
+ * on all methods possible.
+ */
 {
 	// Numeric Handler
 	"Numeric": {
@@ -15,9 +15,41 @@
 				"params": [ "1.0em" ],
 				"expect": "1em"
 			},
+			"negative remove": {
+				"params": [ "-1.0em" ],
+				"expect": "-1em"
+			},
+			"positive remove": {
+				"params": [ "+1.0em" ],
+				"expect": "1em"
+			},
+			"long decimal int": {
+				"params": [ "1.00000em" ],
+				"expect": "1em"
+			},
+			"negative long decimal int": {
+				"params": [ "-1.00000em" ],
+				"expect": "-1em"
+			},
+			"positive long decimal int": {
+				"params": [ "+1.00000em" ],
+				"expect": "1em"
+			},
+			"long decimal": {
+				"params": [ "1.10000em" ],
+				"expect": "1.1em"
+			},
+			"negative long decimal": {
+				"params": [ "-1.10000em" ],
+				"expect": "-1.1em"
+			},
 			"keep": {
 				"params": [ "1.059em" ],
 				"expect": "1.059em"
+			},
+			"negative keep": {
+				"params": [ "-1.059em" ],
+				"expect": "-1.059em"
 			}
 		},
 
@@ -39,9 +71,21 @@
 				"params": [ "0.8px" ],
 				"expect": ".8px"
 			},
+			"-0.5px": {
+				"params": [ "-0.5px" ],
+				"expect": "-.5px"
+			},
+			"+0.5px": {
+				"params": [ "+0.5px" ],
+				"expect": ".5px"
+			},
 			"0.2983%": {
 				"params": [ "0.2983%" ],
 				"expect": ".2983%"
+			},
+			"-10.5px": {
+				"params": [ "-10.5px" ],
+				"expect": "-10.5px"
 			},
 			"10.2983%": {
 				"params": [ "10.2983%" ],
@@ -125,6 +169,26 @@
 			}
 		},
 
+		// Long hex to short name conversions
+		"hex2safe": {
+			"green": {
+				"params": [ "#008000" ],
+				"expect": "green"
+			},
+			"olive": {
+				"params": [ "#808000" ],
+				"expect": "olive"
+			},
+			"peru": {
+				"params": [ "#cd853f" ],
+				"expect": "#cd853f"
+			},
+			"no change": {
+				"params": [ "#cd8599" ],
+				"expect": "#cd8599"
+			}
+		},
+
 		// Long hex to short hex conversions
 		"hex2short": {
 			// Long hex to short hex conversions
@@ -165,6 +229,38 @@
 
 	// Individuals Handler
 	"Individuals": {
+		"borderRadius": {
+			// Directionals handles this, but just to make sure we get there
+			"4 to 1": {
+				"params": [ "border-radius", "10px 10px 10px 10px" ],
+				"expect": "10px"
+			},
+			"3 to 2": {
+				"params": [ "-webkit-border-radius", "10px .15px 10px" ],
+				"expect": "10px .15px"
+			},
+			"2 to 1": {
+				"params": [ "-moz-border-radius", "10in 10in" ],
+				"expect": "10in"
+			},
+			"slash 4 to 1": {
+				"params": [ "border-radius", "10px 10.0px 10px 10.0px/10.0px 10px 10px 10.0px" ],
+				"expect": "10px/10px"
+			},
+			"slash 4 to 1/4 to 2": {
+				"params": [ "-moz-border-radius", "10px 10.0px 10px 10.0px/10.0px -9px 10px -9.0px" ],
+				"expect": "10px/10px -9px"
+			},
+			"slash 4 to 3/3 to 2": {
+				"params": [ "-webkit-border-radius", "10px -9.0px 11px -9.0px/10.0px -9px 10px" ],
+				"expect": "10px -9px 11px/10px -9px"
+			},
+			"Do Nothing": {
+				"params": [ "border-top-left-radus", "10px 10px" ],
+				"expect": "10px 10px"
+			}
+		},
+
 		// Directionals/Unit compression
 		"directionals": {
 			"4 to 1": {
@@ -172,8 +268,12 @@
 				"expect": "10px"
 			},
 			"4 to 2": {
-				"params": [ "10px 15px 10px 15px" ],
-				"expect": "10px 15px"
+				"params": [ ".5px 15px .5px 15px" ],
+				"expect": ".5px 15px"
+			},
+			"4 to 3": {
+				"params": [ "10px -15px 9px -15px" ],
+				"expect": "10px -15px 9px"
 			},
 			"3 to 2": {
 				"params": [ "10px .15px 10px" ],
@@ -203,10 +303,6 @@
 
 		// Font-Weight compressions
 		"fontweight": {
-			"lighter": {
-				"params": [ "lighter" ],
-				"expect": "100"
-			},
 			"normal": {
 				"params": [ "normal" ],
 				"expect": "400"
@@ -215,10 +311,6 @@
 				"params": [ "bold" ],
 				"expect": "700"
 			},
-			"bolder": {
-				"params": [ "bolder" ],
-				"expect": "900"
-			},
 			"heavy": {
 				"params": [ "heavy" ],
 				"expect": "heavy"
@@ -226,6 +318,44 @@
 			"blah": {
 				"params": [ "blah" ],
 				"expect": "blah"
+			},
+			"font-bold": {
+				"params": [ "bold 12pt" ],
+				"expect": "700 12pt"
+			},
+			// We don't convert normal in expanded font properties
+			// as normal is used in font-style and font-varient
+			"font-normal": {
+				"params": [ "normal 12pt" ],
+				"expect": "normal 12pt"
+			}
+		},
+
+		// Special font property conversions
+		"font": {
+			"font-size/line-height": {
+				"params": [ "normal 0.5px/10.0em Georgia, sans-serif" ],
+				"expect": "normal .5px/10em Georgia, sans-serif"
+			},
+			"font-size/line-height start": {
+				"params": [ "0.5px/10.0em Georgia, sans-serif" ],
+				"expect": ".5px/10em Georgia, sans-serif"
+			}
+		},
+
+		// Special clip conversions
+		"clip": {
+			"commas": {
+				"params": [ "rect(10.0px,-0.9px,5px,-.9px)" ],
+				"expect": "rect(10px,-.9px,5px,-.9px)"
+			},
+			"space": {
+				"params": [ "rect( 10.0px -0.9px 5px -.9px )" ],
+				"expect": "rect(10px -.9px 5px -.9px)"
+			},
+			"donothing": {
+				"params": [ "nothing( 10.0px -0.9px 5px -.9px )" ],
+				"expect": "nothing( 10.0px -0.9px 5px -.9px )"
 			}
 		},
 
@@ -257,15 +387,19 @@
 			},
 			"Shorthand": {
 				"params": [ "background", "white none no-repeat" ],
-				"expect": "white 0 no-repeat"
+				"expect": "white none no-repeat"
 			},
 			"Last Value": {
 				"params": [ "background", "white none" ],
-				"expect": "white 0"
+				"expect": "white none"
 			},
 			"Nothing": {
 				"params": [ "background", "white url(someimage.png)" ],
 				"expect": "white url(someimage.png)"
+			},
+			"border nothing": {
+				"params": [ "border-style", "none" ],
+				"expect": "none"
 			}
 		},
 
@@ -294,6 +428,28 @@
 				"params": [ "color", "#7F9D0A" ],
 				"join": ":",
 				"expect": "color:#7f9d0a"
+			},
+			// Border-spacing
+			"border-spacing": {
+				"params": [ "border-spacing", "10.0px 10px" ],
+				"join": ":",
+				"expect": "border-spacing:10px"
+			},
+			// Border-radius
+			"border-radius": {
+				"params": [ "border-radius", "10.0px -0.10px 10.0px -.10px/-0.9px 1px 2px 1.0px" ],
+				"join": ":",
+				"expect": "border-radius:10px -.1px/-.9px 1px 2px"
+			},
+			"-moz-border-radius": {
+				"params": [ "-moz-border-radius", "5px 6px 7px 6px/-1.0px" ],
+				"join": ":",
+				"expect": "-moz-border-radius:5px 6px 7px/-1px"
+			},
+			"-webkit-border-radius": {
+				"params": [ "-webkit-border-radius", "10px 10.0px 10px 10.0px" ],
+				"join": ":",
+				"expect": "-webkit-border-radius:10px"
 			}
 		}
 	},
@@ -301,7 +457,7 @@
 	// Selectors subclass
 	"Selectors": {
 		// All element selectors should be lowercase
-		"lowercaseSelectors": {
+		"parse": {
 			"input": {
 				"params": [ "INPUT" ],
 				"expect": "input"
@@ -328,8 +484,99 @@
 			}
 		},
 
-		// IE coughs up if there is no space after a pseduo selector
-		"pseduoSpace": {
+		// Converting selector id attributes to hash 
+		"idAttribute": {
+			"simple": {
+				"token": true,
+				"params": [ "div[id=#{token}testing#{token}] p" ],
+				"expect": "div#testing p"
+			},
+			"multiple": {
+				"token": true,
+				"params": [ "div[id=#{token}one#{token}] p[id=#{token}two#{token}] a b pre[id=#{token}three#{token}]" ],
+				"expect": "div#one p#two a b pre#three"
+			},
+			"nothing": {
+				"token": true,
+				"params": [ "div[id=#{token}test spacing#{token}] p" ],
+				"expect": "div[id=#{token}test spacing#{token}] p"
+			}
+		},
+
+		// Converting class attributes to selector form
+		"classAttribute": {
+			"simple": {
+				"token": true,
+				"params": [ "div[class=#{token}testing#{token}] p" ],
+				"expect": "div.testing p"
+			},
+			"multiple inner": {
+				"token": true,
+				"params": [ "div[class=#{token}testing\\ multiple\\ classes#{token}] p" ],
+				"expect": "div.testing.multiple.classes p"
+			},
+			"multiple": {
+				"token": true,
+				"params": [ "div[class=#{token}testing\\ multiple\\ classes#{token}] p[class=#{token}one\\ two\\ three#{token}] a b" ],
+				"expect": "div.testing.multiple.classes p.one.two.three a b"
+			},
+			"nothing": {
+				"token": true,
+				"params": [ "div[class=#{token}dont.change#{token}] p" ],
+				"expect": "div[class=#{token}dont.change#{token}] p"
+			}
+		},
+
+		// The assumption being that id is unique, so no need to nest it
+		"strictid": {
+			"basic": {
+				"params": [ "body>div#elem p" ],
+				"expect": "#elem p"
+			},
+			"comma": {
+				"params": [ "span.class,div#elem p" ],
+				"expect": "span.class,#elem p"
+			},
+			"double": {
+				"params": [ "span.class #test,div#elem p" ],
+				"expect": "#test,#elem p"
+			},
+			"nested": {
+				"params": [ "span.class #test div#elem p" ],
+				"expect": "#elem p"
+			},
+			"start": {
+				"params": [ "#test div.elem p" ],
+				"expect": "#test div.elem p"
+			},
+			"url": {
+				"params": [ "#test a[url=http://www.example.com/\\#hashtag] div#elem p" ],
+				"expect": "#elem p"
+			},
+			"nothing": {
+				"params": [ "html body div.class, body > q, i ~ b + a" ],
+				"expect": "html body div.class, body > q, i ~ b + a"
+			}
+		},
+
+		// Remove repeated selectors
+		"repeats": {
+			"1": {
+				"params": [ "#one,#two,#three,#one,#five" ],
+				"expect": "#one,#two,#three,#five"
+			},
+			"2": {
+				"params": [ "div.class>p.other,span.something,div.class>p.other,q,b,i,div.class>p.other" ],
+				"expect": "div.class>p.other,span.something,q,b,i"
+			},
+			"do nothing": {
+				"params": [ "#one,#two,#three,#four,#five" ],
+				"expect": "#one,#two,#three,#four,#five"
+			}
+		},
+
+		// IE coughs up if there is no space after a pseudo selector
+		"pseudoSpace": {
 			"first-letter comma": {
 				"params": [ "a:first-letter,a,b" ],
 				"expect": "a:first-letter ,a,b"
@@ -366,7 +613,7 @@
 
 		// Combination of all Selectors methods
 		"selectors": {
-			"Lowercase and pseduo": {
+			"Lowercase and pseudo": {
 				"params": [
 					[ "A:first-line>B:first-letter.test+PRE.old:first-letter", "A:first-line B" ]
 				],
@@ -387,7 +634,7 @@
 		},
 
 		// Escaped character removal
-		"removeEscapedCharacters": {
+		"removeInjections": {
 			"multiple": {
 				"params": [ "background:url(http\\://www.codenothing.com/random.php?foo=bar\\;&colon=te\\:st\\;)" ],
 				"expect": "background:url(http://www.codenothing.com/random.php?foo=bar;&colon=te:st;)"
@@ -424,41 +671,223 @@
 		}
 	},
 
-	// Combine handler
-	"Combine": {
-		// Color/Style/Width properties
-		"combineCSWproperties": {
+	// Color/Style/Width properties
+	"Combine.BorderOutline": {
+		"storage": {
+			"_special": "storage",
 			"border": {
-				"params": [ "border-color:red;border-style:solid;border-width:2px;" ],
-				"expect": [
-					"border:2px solid red;",
-					"border:2px solid red;",
-					"border:2px solid red;"
-				]
+				"params": [ "border-color:red;border-style:solid;border-width:2px" ],
+				"expect": {
+					"border": "border:2px solid red;"
+				}
 			},
 			"outline": {
 				"params": [ "outline-color:blue;outline-style:thin;outline-width:1px;" ],
-				"expect": [
-					"outline:1px thin blue;",
-					"outline:1px thin blue;",
-					"outline:1px thin blue;"
-				]
+				"expect": {
+					"outline": "outline:1px thin blue;"
+				}
+			},
+			"border-bottom": {
+				"params": [ "border-bottom-color:red;border-bottom-style:solid;border-bottom-width:2px;" ],
+				"expect": {
+					"border-bottom": "border-bottom:2px solid red;"
+				}
+			},
+			"border-top": {
+				"params": [ "border-top-color:red;border-top-style:solid;border-top-width:2px" ],
+				"expect": {
+					"border-top": "border-top:2px solid red;"
+				}
+			},
+			"border-left": {
+				"params": [ "border-left-color:red;border-left-style:solid;border-left-width:2px;" ],
+				"expect": {
+					"border-left": "border-left:2px solid red;"
+				}
+			},
+			"border-right": {
+				"params": [ "border-right-color:red;border-right-style:solid;border-right-width:2px;" ],
+				"expect": {
+					"border-right": "border-right:2px solid red;"
+				}
+			},
+			"many": {
+				"paramjoin": "",
+				"params": [
+					"outline-color:blue;outline-style:thin;outline-width:1px;",
+					"border-bottom-color:red;border-bottom-style:solid;border-bottom-width:2px;",
+					"border-top-color:red;border-top-style:solid;border-top-width:2px;",
+					"border-left-color:red;border-left-style:solid;border-left-width:2px;",
+					"border-right-color:red;border-right-style:solid;border-right-width:2px"
+				],
+				"expect": {
+					"outline": "outline:1px thin blue;",
+					"border-bottom": "border-bottom:2px solid red;",
+					"border-top": "border-top:2px solid red;",
+					"border-left": "border-left:2px solid red;",
+					"border-right": "border-right:2px solid red;"
+				}
+			},
+			"nothing": {
+				"params": [ "border-color:red;color:red;border-style:solid;color:white" ],
+				"expect": {}
 			}
 		},
 
-		// Sound props
-		"combineAuralCuePause": {
+		"combine": {
+			"border": {
+				"params": [ "border-color:red;border-style:solid;border-width:2px;" ],
+				"expect": "border:2px solid red;"
+			},
+			"outline": {
+				"params": [ "outline-color:blue;outline-style:thin;outline-width:1px;" ],
+				"expect": "outline:1px thin blue;"
+			},
+			"border-bottom": {
+				"params": [ "border-bottom-color:red;border-bottom-style:solid;border-bottom-width:2px;" ],
+				"expect": "border-bottom:2px solid red;"
+			},
+			"border-top": {
+				"params": [ "border-top-color:red;border-top-style:solid;border-top-width:2px;font-size:12px" ],
+				"expect": "border-top:2px solid red;font-size:12px"
+			},
+			"border-left": {
+				"params": [ "color:white;border-left-color:red;border-left-style:solid;border-left-width:2px" ],
+				"expect": "color:white;border-left:2px solid red;"
+			},
+			"border-right": {
+				"params": [ "border-right-color:red;border-right-style:solid;border-right-width:2px;" ],
+				"expect": "border-right:2px solid red;"
+			},
+			"inbetween": {
+				"params": [ "border-color:red;color:red;border-style:solid;color:white;border-width:2px;" ],
+				"expect": "border:2px solid red;color:red;color:white;"
+			},
+			"border style directional": {
+				"params": [ "border-color:black;border-style:none none solid;border-width:0 0 1;" ],
+				"expect": "border-color:black;border-style:none none solid;border-width:0 0 1;"
+			},
+			"do nothing": {
+				"params": [ "border-color:red;color:red;border-style:solid;color:white;" ],
+				"expect": "border-color:red;color:red;border-style:solid;color:white;"
+			}
+		}
+	},
+
+	// Sound props
+	"Combine.Aural": {
+		"combine": {
 			"cue": {
-				"params": [ "cue-before:url(sound.wav);cue-after:url(after.wav);" ],
-				"expect": [
-					"cue:url(sound.wav) url(after.wav);",
-					"cue:url(sound.wav) url(after.wav);"
-				]
+				"params": [ "cue-before:url(sound.wav);color:red;cue-after:url(after.wav);" ],
+				"expect": "cue:url(sound.wav) url(after.wav);color:red;"
+			},
+			"pause": {
+				"params": [ "color:white;pause-before:2s;pause-after:3s" ],
+				"expect": "color:white;pause:2s 3s;"
+			},
+			"do nothing": {
+				"params": [ "pause-before:2s;color:red;" ],
+				"expect": "pause-before:2s;color:red;"
+			}
+		},
+
+		"storage": {
+			"_special": "storage",
+			"cue": {
+				"params": [ "cue-before:url(sound.wav);color:red;cue-after:url(after.wav);" ],
+				"expect": {
+					"cue": "cue:url(sound.wav) url(after.wav);"
+				}
+			},
+			"pause": {
+				"params": [ "color:white;pause-before:2s;pause-after:3s;" ],
+				"expect": {
+					"pause": "pause:2s 3s;"
+				}
+			},
+			"nothing": {
+				"params": [ "pause-before:2s;color:red;" ],
+				"expect": {}
+			}
+		}
+	},
+
+	// Expanding margin/padding beforce combinations
+	"Combine.MarginPadding": {
+		"storage": {
+			"_special": "storage",
+			"4-way": {
+				"params": [ "margin-top:10px;margin-right:10px;margin-bottom:10px;margin-left:10px;" ],
+				"expect": {
+					"margin": "margin:10px;"
+				}
+			},
+			"2-way": {
+				"params": [ "color:red;padding-top:0;padding-right:10px;padding-bottom:0;padding-left:10px;" ],
+				"expect": {
+					"padding": "padding:0 10px;"
+				}
+			},
+			"3-way": {
+				"params": [ "margin-top:0;margin-right:10px;margin-bottom:2px;margin-left:10px;color:white;" ],
+				"expect": {
+					"margin": "margin:0 10px 2px;"
+				}
+			},
+			"just combine": {
+				"params": [ "color:red;padding-top:0;padding-right:5px;padding-bottom:10px;padding-left:2px;color:white;" ],
+				"expect": {
+					"padding": "padding:0 5px 10px 2px;"
+				}
+			},
+			"multiple": {
+				"paramjoin": ";",
+				"params": [
+					"margin-top:2px",
+					"margin-right:3px",
+					"margin-bottom:4px",
+					"margin-left:3px",
+					"padding-top:5px",
+					"padding-right:5px",
+					"padding-bottom:5px",
+					"padding-left:5px"
+				],
+				"expect": {
+					"margin": "margin:2px 3px 4px;",
+					"padding": "padding:5px;"
+				}
+			},
+			"do nothing": {
+				"params": [ "color:red;margin-top:20px;margin-left:10px;color:white;" ],
+				"expect": {}
+			}
+		},
+
+		"expand": {
+			"expand 1": {
+				"params": [ "margin:10px" ],
+				"expect": "margin-top:10px;margin-right:10px;margin-bottom:10px;margin-left:10px;"
+			},
+			"expand 2": {
+				"params": [ "color:red;padding:0 10px" ],
+				"expect": "color:red;padding-top:0;padding-right:10px;padding-bottom:0;padding-left:10px;"
+			},
+			"expand 3": {
+				"params": [ "margin:0 10px 2px;color:white;" ],
+				"expect": "margin-top:0;margin-right:10px;margin-bottom:2px;margin-left:10px;color:white;"
+			},
+			"expand 4": {
+				"params": [ "color:red;padding:0 5px 10px 2px;color:white;" ],
+				"expect": "color:red;padding-top:0;padding-right:5px;padding-bottom:10px;padding-left:2px;color:white;"
+			},
+			"no expand": {
+				"params": [ "color:red;margin-top:20px;margin-left:10px;color:white;" ],
+				"expect": "color:red;margin-top:20px;margin-left:10px;color:white;"
 			}
 		},
 
 		// Margin/Padding combinations
-		"combineMPproperties": {
+		"combine": {
 			"top-left": {
 				"params": [ "margin-top:10px;margin-left:10px;" ],
 				"expect": "margin-top:10px;margin-left:10px;"
@@ -469,187 +898,203 @@
 			},
 			"4 to 1": {
 				"params": [ "margin-top:10px;margin-left:10px;margin-right:10px;margin-bottom:10px;" ],
-				"expect": [
-					"margin:10px;",
-					"margin:10px;",
-					"margin:10px;",
-					"margin:10px;"
-				]
+				"expect": "margin:10px;"
 			},
 			"4 to 2": {
 				"params": [ "padding-top:12px;padding-left:10px;padding-right:10px;padding-bottom:12px;" ],
-				"expect": [
-					"padding:12px 10px;",
-					"padding:12px 10px;",
-					"padding:12px 10px;",
-					"padding:12px 10px;"
-				]
+				"expect": "padding:12px 10px;"
+			},
+			"overwrite": {
+				"params": [ "margin:0;margin-left:10px;margin-right:10px;" ],
+				"expect": "margin:0 10px;"
+			},
+			"remain the same": {
+				"params": [ "margin:0;color:blue;" ],
+				"expect": "margin:0;color:blue;"
 			}
-		},
+		}
+	},
 
-		// Border combinations
-		"combineBorderDefinitions": {
+	// Border combinations
+	"Combine.Border": {
+		"replace": {
 			"border": {
-				"params": [ "border-top:1px solid red;border-left:1px solid red;border-right:1px solid red;border-bottom:1px solid red;" ],
-				"expect": [
-					"border:1px solid red;",
-					"border:1px solid red;",
-					"border:1px solid red;",
-					"border:1px solid red;"
-				]
+				"paramjoin": "",
+				"params": [ 
+					"border-top:1px solid red;",
+					"color:blue;",
+					"border-left:1px solid red;",
+					"border-right:1px solid red;",
+					"border-bottom:1px solid red"
+				],
+				"expect": "border:1px solid red;"
+			},
+			"nothing": {
+				"paramjoin": "",
+				"params": [ 
+					"border-top:1px solid red;",
+					"color:blue;",
+					"border-right:1px solid red;",
+					"border-bottom:1px solid red;"
+				],
+				"expect": false
 			}
 		},
 
-		// Font combinations
-		"combineFontDefinitions": {
-			"1": {
-				"params": [ "font-style:italic;font-variant:normal;font-weight:bold;font-size:12pt;line-height:20px;font-family:arial;" ],
+		"combine": {
+			"border": {
+				"paramjoin": "",
+				"params": [ 
+					"border-top:1px solid red;",
+					"color:blue;",
+					"border-left:1px solid red;",
+					"border-right:1px solid red;",
+					"border-bottom:1px solid red"
+				],
+				"expect": "border:1px solid red;color:blue;"
+			},
+			"do nothing": {
+				"paramjoin": "",
+				"params": [ 
+					"border-top:1px solid red;",
+					"color:blue;",
+					"border-left:1px solid blue;",
+					"border-right:1px solid red;",
+					"border-bottom:1px solid red;"
+				],
 				"expect": [
-					"font:italic normal bold 12pt/20px arial;",
-					"font:italic normal bold 12pt/20px arial;",
-					"font:italic normal bold 12pt/20px arial;",
-					"font:italic normal bold 12pt/20px arial;",
-					"font:italic normal bold 12pt/20px arial;",
-					"font:italic normal bold 12pt/20px arial;"
+					"border-top:1px solid red;",
+					"color:blue;",
+					"border-left:1px solid blue;",
+					"border-right:1px solid red;",
+					"border-bottom:1px solid red;"
 				]
+			}
+		}
+	},
+
+	// Font combinations
+	"Combine.Font": {
+		"storage": {
+			"_special": "storage",
+			"1": {
+				"params": [ "font-style:italic;font-variant:normal;font-weight:bold;font-size:12pt;line-height:20px;font-family:arial" ],
+				"expect": {
+					"font-style": "italic",
+					"font-variant": "normal",
+					"font-weight": "bold",
+					"font-family": "arial",
+					"size/height": "12pt/20px"
+				}
 			},
 			"2": {
 				"params": [ "font-style:italic;font-variant:normal;font-weight:bold;font-size:12pt;font-family:arial;" ],
-				"expect": [
-					"font:italic normal bold 12pt arial;",
-					"font:italic normal bold 12pt arial;",
-					"font:italic normal bold 12pt arial;",
-					"font:italic normal bold 12pt arial;",
-					"font:italic normal bold 12pt arial;"
-				]
+				"expect": {
+					"font-style": "italic",
+					"font-variant": "normal",
+					"font-weight": "bold",
+					"font-size": "12pt",
+					"font-family": "arial"
+				}
 			},
 			"3": {
-				"params": [ "font-style:italic;font-variant:normal;font-size:12pt;line-height:20px;font-family:arial;" ],
-				"expect": [
-					"font:italic normal 12pt/20px arial;",
-					"font:italic normal 12pt/20px arial;",
-					"font:italic normal 12pt/20px arial;",
-					"font:italic normal 12pt/20px arial;",
-					"font:italic normal 12pt/20px arial;"
-				]
+				"params": [ "font-style:italic;font-variant:normal;font-size:12pt;line-height:20px;font-family:arial" ],
+				"expect": {
+					"font-style":"italic",
+					"font-variant": "normal",
+					"font-family": "arial",
+					"size/height": "12pt/20px"
+				}
 			},
-			"4": {
-				"params": [ "font-style:italic;font-variant:normal;font-size:12pt;font-family:arial;" ],
-				"expect": [
-					"font:italic normal 12pt arial;",
-					"font:italic normal 12pt arial;",
-					"font:italic normal 12pt arial;",
-					"font:italic normal 12pt arial;"
-				]
+			"injection": {
+				"params": [ "font-variant:normal;font-size:12pt;font-family:arial;color:red;" ],
+				"expect": {
+					"font-variant":"normal",
+					"font-size": "12pt",
+					"font-family": "arial"
+				}
 			},
-			"5": {
-				"params": [ "font-style:italic;font-weight:bold;font-size:12pt;line-height:20px;font-family:arial;" ],
-				"expect": [
-					"font:italic bold 12pt/20px arial;",
-					"font:italic bold 12pt/20px arial;",
-					"font:italic bold 12pt/20px arial;",
-					"font:italic bold 12pt/20px arial;",
-					"font:italic bold 12pt/20px arial;"
-				]
-			},
-			"6": {
-				"params": [ "font-style:italic;font-weight:bold;font-size:12pt;font-family:arial;" ],
-				"expect": [
-					"font:italic bold 12pt arial;",
-					"font:italic bold 12pt arial;",
-					"font:italic bold 12pt arial;",
-					"font:italic bold 12pt arial;"
-				]
-			},
-			"7": {
-				"params": [ "font-variant:normal;font-weight:bold;font-size:12pt;line-height:20px;font-family:arial;" ],
-				"expect": [
-					"font:normal bold 12pt/20px arial;",
-					"font:normal bold 12pt/20px arial;",
-					"font:normal bold 12pt/20px arial;",
-					"font:normal bold 12pt/20px arial;",
-					"font:normal bold 12pt/20px arial;"
-				]
-			},
-			"8": {
-				"params": [ "font-variant:normal;font-weight:bold;font-size:12pt;font-family:arial;" ],
-				"expect": [
-					"font:normal bold 12pt arial;",
-					"font:normal bold 12pt arial;",
-					"font:normal bold 12pt arial;",
-					"font:normal bold 12pt arial;"
-				]
-			},
-			"9": {
-				"params": [ "font-weight:bold;font-size:12pt;line-height:20px;font-family:arial;" ],
-				"expect": [
-					"font:bold 12pt/20px arial;",
-					"font:bold 12pt/20px arial;",
-					"font:bold 12pt/20px arial;",
-					"font:bold 12pt/20px arial;"
-				]
-			},
-			"10": {
-				"params": [ "font-weight:bold;font-size:12pt;font-family:arial;" ],
-				"expect": [
-					"font:bold 12pt arial;",
-					"font:bold 12pt arial;",
-					"font:bold 12pt arial;"
-				]
-			},
-			"11": {
-				"params": [ "font-variant:normal;font-size:12pt;line-height:20px;font-family:arial;" ],
-				"expect": [
-					"font:normal 12pt/20px arial;",
-					"font:normal 12pt/20px arial;",
-					"font:normal 12pt/20px arial;",
-					"font:normal 12pt/20px arial;"
-				]
-			},
-			"12": {
-				"params": [ "font-variant:normal;font-size:12pt;font-family:arial;" ],
-				"expect": [
-					"font:normal 12pt arial;",
-					"font:normal 12pt arial;",
-					"font:normal 12pt arial;"
-				]
-			},
-			"13": {
-				"params": [ "font-style:italic;font-size:12pt;line-height:20px;font-family:arial;" ],
-				"expect": [
-					"font:italic 12pt/20px arial;",
-					"font:italic 12pt/20px arial;",
-					"font:italic 12pt/20px arial;",
-					"font:italic 12pt/20px arial;"
-				]
-			},
-			"14": {
-				"params": [ "font-style:italic;font-size:12pt;font-family:arial;" ],
-				"expect": [
-					"font:italic 12pt arial;",
-					"font:italic 12pt arial;",
-					"font:italic 12pt arial;"
-				]
-			},
-			"15": {
-				"params": [ "font-size:12pt;line-height:20px;font-family:arial;" ],
-				"expect": [
-					"font:12pt/20px arial;",
-					"font:12pt/20px arial;",
-					"font:12pt/20px arial;"
-				]
-			},
-			"16": {
-				"params": [ "font-size:12pt;font-family:arial;" ],
-				"expect": [
-					"font:12pt arial;",
-					"font:12pt arial;"
-				]
+			"nothing": {
+				"params": [ "color:red;background:blue;" ],
+				"expect": {}
 			}
 		},
 
-		// Background combinations
-		"combineBackgroundDefinitions": {
+		"combine": {
+			"1": {
+				"params": [ "font-style:italic;font-variant:normal;font-weight:bold;font-size:12pt;line-height:20px;font-family:arial;" ],
+				"expect": "font:italic normal bold 12pt/20px arial;"
+			},
+			"2": {
+				"params": [ "font-style:italic;font-variant:normal;font-weight:bold;font-size:12pt;font-family:arial;" ],
+				"expect": "font:italic normal bold 12pt arial;"
+			},
+			"3": {
+				"params": [ "font-style:italic;font-variant:normal;font-size:12pt;line-height:20px;font-family:arial" ],
+				"expect": "font:italic normal 12pt/20px arial;"
+			},
+			"4": {
+				"params": [ "font-style:italic;font-variant:normal;font-size:12pt;font-family:arial;" ],
+				"expect": "font:italic normal 12pt arial;"
+			},
+			"5": {
+				"params": [ "font-style:italic;font-weight:bold;font-size:12pt;line-height:20px;font-family:arial;" ],
+				"expect": "font:italic bold 12pt/20px arial;"
+			},
+			"6": {
+				"params": [ "font-style:italic;color:red;font-weight:bold;font-size:12pt;font-family:arial;" ],
+				"expect": "font:italic bold 12pt arial;color:red;"
+			},
+			"7": {
+				"params": [ "font-variant:normal;font-weight:bold;font-size:12pt;line-height:20px;font-family:arial;" ],
+				"expect": "font:normal bold 12pt/20px arial;"
+			},
+			"8": {
+				"params": [ "font-variant:normal;font-weight:bold;font-size:12pt;font-family:arial;" ],
+				"expect": "font:normal bold 12pt arial;"
+			},
+			"9": {
+				"params": [ "color:red;font-weight:bold;font-size:12pt;line-height:20px;font-family:arial;" ],
+				"expect": "color:red;font:bold 12pt/20px arial;"
+			},
+			"10": {
+				"params": [ "font-weight:bold;font-size:12pt;font-family:arial;" ],
+				"expect": "font:bold 12pt arial;"
+			},
+			"11": {
+				"params": [ "font-variant:normal;font-size:12pt;line-height:20px;font-family:arial" ],
+				"expect": "font:normal 12pt/20px arial;"
+			},
+			"12": {
+				"params": [ "font-variant:normal;font-size:12pt;font-family:arial;color:red;" ],
+				"expect": "font:normal 12pt arial;color:red;"
+			},
+			"13": {
+				"params": [ "font-style:italic;font-size:12pt;line-height:20px;font-family:arial;" ],
+				"expect": "font:italic 12pt/20px arial;"
+			},
+			"14": {
+				"params": [ "font-style:italic;font-size:12pt;font-family:arial;" ],
+				"expect": "font:italic 12pt arial;"
+			},
+			"15": {
+				"params": [ "font-size:12pt;color:black;line-height:20px;font-family:arial" ],
+				"expect": "font:12pt/20px arial;color:black;"
+			},
+			"16": {
+				"params": [ "color:white;font-size:12pt;font-family:arial;" ],
+				"expect": "color:white;font:12pt arial;"
+			},
+			"no change": {
+				"params": [ "font-style:italic;font-size:12pt;" ],
+				"expect": "font-style:italic;font-size:12pt;"
+			}
+		}
+	},
+
+	// Background combinations
+	"Combine.Background": {
+		"combine": {
 			"1": {
 				"paramjoin": "",
 				"params": [
@@ -657,15 +1102,9 @@
 					"background-image:url(images/img.gif);",
 					"background-repeat:no-repeat;",
 					"background-attachment:scroll;",
-					"background-position:center;"
+					"background-position:center"
 				],
-				"expect": [
-					"background:green url(images/img.gif) no-repeat scroll center;",
-					"background:green url(images/img.gif) no-repeat scroll center;",
-					"background:green url(images/img.gif) no-repeat scroll center;",
-					"background:green url(images/img.gif) no-repeat scroll center;",
-					"background:green url(images/img.gif) no-repeat scroll center;"
-				]
+				"expect": "background:green url(images/img.gif) no-repeat scroll center;"
 			},
 			"2": {
 				"paramjoin": "",
@@ -675,12 +1114,7 @@
 					"background-attachment:scroll;",
 					"background-position:center;"
 				],
-				"expect": [
-					"background:green url(images/img.gif) scroll center;",
-					"background:green url(images/img.gif) scroll center;",
-					"background:green url(images/img.gif) scroll center;",
-					"background:green url(images/img.gif) scroll center;"
-				]
+				"expect": "background:green url(images/img.gif) scroll center;"
 			},
 			"3": {
 				"paramjoin": "",
@@ -690,12 +1124,7 @@
 					"background-repeat:no-repeat;",
 					"background-position:center;"
 				],
-				"expect": [
-					"background:green url(images/img.gif) no-repeat center;",
-					"background:green url(images/img.gif) no-repeat center;",
-					"background:green url(images/img.gif) no-repeat center;",
-					"background:green url(images/img.gif) no-repeat center;"
-				]
+				"expect": "background:green url(images/img.gif) no-repeat center;"
 			},
 			"4": {
 				"paramjoin": "",
@@ -705,125 +1134,80 @@
 					"background-repeat:no-repeat;",
 					"background-attachment:scroll;"
 				],
-				"expect": [
-					"background:green url(images/img.gif) no-repeat scroll;",
-					"background:green url(images/img.gif) no-repeat scroll;",
-					"background:green url(images/img.gif) no-repeat scroll;",
-					"background:green url(images/img.gif) no-repeat scroll;"
-				]
+				"expect": "background:green url(images/img.gif) no-repeat scroll;"
 			},
 			"5": {
-				"params": [ "background-color:green;background-image:url(images/img.gif);background-repeat:no-repeat;" ],
-				"expect": [
-					"background:green url(images/img.gif) no-repeat;",
-					"background:green url(images/img.gif) no-repeat;",
-					"background:green url(images/img.gif) no-repeat;"
-				]
+				"params": [ "background-color:green;background-image:url(images/img.gif);background-repeat:no-repeat" ],
+				"expect": "background:green url(images/img.gif) no-repeat;"
 			},
 			"6": {
 				"params": [ "background-color:green;background-image:url(images/img.gif);background-attachment:scroll;" ],
-				"expect": [
-					"background:green url(images/img.gif) scroll;",
-					"background:green url(images/img.gif) scroll;",
-					"background:green url(images/img.gif) scroll;"
-				]
+				"expect": "background:green url(images/img.gif) scroll;"
 			},
 			"7": {
 				"params": [ "background-color:green;background-image:url(images/img.gif);background-position:center;" ],
-				"expect": [
-					"background:green url(images/img.gif) center;",
-					"background:green url(images/img.gif) center;",
-					"background:green url(images/img.gif) center;"
-				]
+				"expect": "background:green url(images/img.gif) center;"
 			},
 			"8": {
-				"params": [ "background-color:green;background-image:url(images/img.gif);" ],
-				"expect": [
-					"background:green url(images/img.gif);",
-					"background:green url(images/img.gif);"
-				]
+				"params": [ "color:red;background-color:green;background-image:url(images/img.gif)" ],
+				"expect": "color:red;background:green url(images/img.gif);"
 			},
 			"9": {
-				"params": [ "background-image:url(images/img.gif);background-attachment:scroll;background-position:center;" ],
-				"expect": [
-					"background:url(images/img.gif) scroll center;",
-					"background:url(images/img.gif) scroll center;",
-					"background:url(images/img.gif) scroll center;"
-				]
+				"params": [ "background-image:url(images/img.gif);background-attachment:scroll;background-position:center;color:red;" ],
+				"expect": "background:url(images/img.gif) scroll center;color:red;"
 			},
 			"10": {
-				"params": [ "background-image:url(images/img.gif);background-repeat:no-repeat;background-position:center;" ],
-				"expect": [
-					"background:url(images/img.gif) no-repeat center;",
-					"background:url(images/img.gif) no-repeat center;",
-					"background:url(images/img.gif) no-repeat center;"
-				]
+				"params": [ "background-image:url(images/img.gif);color:black;background-repeat:no-repeat;background-position:center;" ],
+				"expect": "background:url(images/img.gif) no-repeat center;color:black;"
 			},
 			"11": {
 				"params": [ "background-image:url(images/img.gif);background-repeat:no-repeat;background-attachment:scroll;" ],
-				"expect": [
-					"background:url(images/img.gif) no-repeat scroll;",
-					"background:url(images/img.gif) no-repeat scroll;",
-					"background:url(images/img.gif) no-repeat scroll;"
-				]
+				"expect": "background:url(images/img.gif) no-repeat scroll;"
 			},
 			"12": {
 				"params": [ "background-image:url(images/img.gif);background-repeat:no-repeat;" ],
-				"expect": [
-					"background:url(images/img.gif) no-repeat;",
-					"background:url(images/img.gif) no-repeat;"
-				]
+				"expect": "background:url(images/img.gif) no-repeat;"
 			},
 			"13": {
 				"params": [ "background-image:url(images/img.gif);background-attachment:scroll;" ],
-				"expect": [
-					"background:url(images/img.gif) scroll;",
-					"background:url(images/img.gif) scroll;"
-				]
+				"expect": "background:url(images/img.gif) scroll;"
 			},
 			"14": {
-				"params": [ "background-image:url(images/img.gif);" ],
-				"expect": "background:url(images/img.gif);"
+				"params": [ "background-image:url(images/img.gif);font-size:12pt;" ],
+				"expect": "background:url(images/img.gif);font-size:12pt;"
 			},
 			"15": {
 				"params": [ "background-color:green;" ],
 				"expect": "background:green;"
+			},
+			"no change": {
+				"params": [ "background-color:green;background-position:center;" ],
+				"expect": "background-color:green;background-position:center;"
 			}
-		},
+		}
+	},
 
-		// List combinations
-		"combineListProperties": {
+	// List combinations
+	"Combine.List": {
+		"replace": {
 			"1": {
-				"params": [ "list-style-type:none;list-style-position:inline;list-style-image:url(images/img.gif);" ],
-				"expect": [
-					"list-style:none inline url(images/img.gif);",
-					"list-style:none inline url(images/img.gif);",
-					"list-style:none inline url(images/img.gif);"
-				]
+				"params": [ "list-style-type:none;list-style-position:inline;list-style-image:url(images/img.gif)" ],
+				"expect": "list-style:none inline url(images/img.gif);"
 			},
 			"2": {
-				"params": [ "list-style-type:none;list-style-position:inline;" ],
-				"expect": [
-					"list-style:none inline;",
-					"list-style:none inline;"
-				]
+				"params": [ "list-style-type:none;color:white;list-style-position:inline;" ],
+				"expect": "list-style:none inline;"
 			},
 			"3": {
-				"params": [ "list-style-type:none;list-style-image:url(images/img.gif);" ],
-				"expect": [
-					"list-style:none url(images/img.gif);",
-					"list-style:none url(images/img.gif);"
-				]
+				"params": [ "color:red;list-style-type:none;list-style-image:url(images/img.gif);" ],
+				"expect": "list-style:none url(images/img.gif);"
 			},
 			"4": {
-				"params": [ "list-style-position:inline;list-style-image:url(images/img.gif);" ],
-				"expect": [
-					"list-style:inline url(images/img.gif);",
-					"list-style:inline url(images/img.gif);"
-				]
+				"params": [ "list-style-position:inline;list-style-image:url(images/img.gif)" ],
+				"expect": "list-style:inline url(images/img.gif);"
 			},
 			"5": {
-				"params": [ "list-style-type:none;" ],
+				"params": [ "list-style-type:none;color:black;" ],
 				"expect": "list-style:none;"
 			},
 			"6": {
@@ -836,31 +1220,133 @@
 			}
 		},
 
-		// Central handler for all details
+		"combine": {
+			"1": {
+				"params": [ "list-style-type:none;list-style-position:inline;list-style-image:url(images/img.gif);" ],
+				"expect": "list-style:none inline url(images/img.gif);"
+			},
+			"2": {
+				"params": [ "list-style-type:none;color:white;list-style-position:inline;" ],
+				"expect": "list-style:none inline;color:white;"
+			},
+			"3": {
+				"params": [ "color:red;list-style-type:none;list-style-image:url(images/img.gif);" ],
+				"expect": "color:red;list-style:none url(images/img.gif);"
+			},
+			"4": {
+				"params": [ "list-style-position:inline;list-style-image:url(images/img.gif);" ],
+				"expect": "list-style:inline url(images/img.gif);"
+			},
+			"5": {
+				"params": [ "list-style-type:none;color:black;" ],
+				"expect": "list-style:none;color:black;"
+			},
+			"6": {
+				"params": [ "list-style-position:inline;" ],
+				"expect": "list-style:inline;"
+			},
+			"7": {
+				"params": [ "list-style-image:url(images/img.gif);" ],
+				"expect": "list-style:url(images/img.gif);"
+			}
+		}
+	},
+
+	// Border radii
+	"Combine.BorderRadius": {
+		"combine": {
+			"shorthand regular": {
+				"params": [ "border-radius:10px 10px 10px 10px" ],
+				"expect": "border-radius:10px;"
+			},
+			"shorthand moz": {
+				"params": [ "-moz-border-radius:10px 9px 10px 9px" ],
+				"expect": "-moz-border-radius:10px 9px;"
+			},
+			"shorthand webkit": {
+				"params": [ "-webkit-border-radius:10px 9px 8px 9px" ],
+				"expect": "-webkit-border-radius:10px 9px 8px;"
+			},
+			"shorthand regular": {
+				"params": [ "border-radius:10px 9px 8px 7px;" ],
+				"expect": "border-radius:10px 9px 8px 7px;"
+			},
+			"shorthand slash regular": {
+				"params": [ "border-radius:10px 10px 10px 10px/5px 4px 3px 2px;" ],
+				"expect": "border-radius:10px/5px 4px 3px 2px;"
+			},
+			"shorthand slash moz": {
+				"params": [ "-moz-border-radius:5px 4px 5px 4px/5px 5px;" ],
+				"expect": "-moz-border-radius:5px 4px/5px;"
+			},
+			"shorthand slash webkit": {
+				"params": [ "-webkit-border-radius:5px 4px 3px/10px;" ],
+				"expect": "-webkit-border-radius:5px 4px 3px/10px;"
+			},
+			"shorthand slash regular final": {
+				"params": [ "-webkit-border-radius:10px/10px;" ],
+				"expect": "-webkit-border-radius:10px/10px;"
+			},
+			"full regular": {
+				"params": [
+					"border-top-left-radius:10px;",
+					"border-top-right-radius:10px;",
+					"border-bottom-right-radius:10px;",
+					"border-bottom-left-radius:10px"
+				],
+				"paramjoin": "",
+				"expect": "border-radius:10px;"
+			},
+			"full slash moz": {
+				"params": [
+					"-moz-border-radius-topleft:10px 5px;",
+					"-moz-border-radius-topright:9px 4px;",
+					"-moz-border-radius-bottomright:10px 3px;",
+					"-moz-border-radius-bottomleft:9px 4px"
+				],
+				"paramjoin": "",
+				"expect": "-moz-border-radius:10px 9px/5px 4px 3px;"
+			},
+			"full slash webkit": {
+				"params": [
+					"-webkit-border-top-left-radius:10px 5px;",
+					"-webkit-border-top-right-radius:9px 5px;",
+					"-webkit-border-bottom-right-radius:8px 5px;",
+					"-webkit-border-bottom-left-radius:7px 5px"
+				],
+				"paramjoin": "",
+				"expect": "-webkit-border-radius:10px 9px 8px 7px/5px;"
+			},
+			"overwrite regular": {
+				"params": [ "border-radius:10px;border-top-left-radius:11px;" ],
+				"expect": "border-radius:11px 10px 10px;"
+			},
+			"overwrite slash moz": {
+				"params": [ "-moz-border-radius:10px;-moz-border-radius-topleft:11px 12px;-moz-border-radius-bottomright:11px 12px;" ],
+				"expect": "-moz-border-radius:11px 10px/12px 0;"
+			},
+			"overwrite slash webkit": {
+				"params": [ "-webkit-border-radius:10px;-webkit-border-top-left-radius:11px;" ],
+				"expect": "-webkit-border-radius:11px 10px 10px;"
+			}
+		}
+	},
+
+	// Central handler for all combinations
+	"Combine.Combine":{
 		"combine": {
 			"_special": "details",
 			"params": [
 				"font-size:12pt;list-style-type:none;font-family:arial;list-style-position:inline;",
 				"background-color:green;background-image:url(images/img.gif);",
-				"margin-top:10px;margin-left:10px;margin-right:10px;margin-bottom:10px;"
+				"margin-top:10px;margin-left:10px;margin-right:10px;margin-bottom:10px;",
+				"margin-top:10px;color:white;margin-right:10px;color:red;"
 			],
 			"expect": [
-				[
-					"font:12pt arial;",
-					"list-style:none inline;",
-					"font:12pt arial;",
-					"list-style:none inline;"
-				],
-				[
-					"background:green url(images/img.gif);",
-					"background:green url(images/img.gif);"
-				],
-				[
-					"margin:10px;",
-					"margin:10px;",
-					"margin:10px;",
-					"margin:10px;"
-				]
+				"font:12pt arial;list-style:none inline;",
+				"background:green url(images/img.gif);",
+				"margin:10px;",
+				"margin-top:10px;color:white;margin-right:10px;color:red;"
 			]
 		}
 	},
@@ -981,14 +1467,14 @@
 					"\n\t\t\t\t\t#red > div.today + b.old, body.broken, #wtf {\n\n",
 					"\t\n\tbackground: url(\"someimg.jpg\");;;;\n\n\n",
 					"\t\tborder: 1px solid red;;;;;\n\t\n\t",
-					"\tcolor: white;;;;;\n\t\n",
+					"\tcolor: white !important;;;;;\n\t\n",
 					"}\n\n\n"
 				],
 				"expect": [
 					"#red>div.today+b.old,body.broken,#wtf{",
 					"background: url(someimg.jpg);",
 					"border: 1px solid red;",
-					"color: white;",
+					"color: white!important;",
 					"}"
 				]
 			}
@@ -999,7 +1485,7 @@
 			// Single property with URL
 			"single": {
 				"params": [ "#one{background:url(http://www.example1.com?a=semi;);}" ],
-				"expect": "#one{background:url(http\\:\\/\\/www.example1.com?a=semi\\;);}"
+				"expect": "#one{background:url(http\\:\\/\\/www\\.example1\\.com?a\\=semi\\;);}"
 			},
 
 			// Many properties with URL
@@ -1012,10 +1498,10 @@
 					"#four{background:url(http://www.example4.com?a=semi;);}"
 				],
 				"expect": [
-					"#one{background:url(http\\:\\/\\/www.example1.com?a=semi\\;);}",
-					"#two{background:url(http\\:\\/\\/www.example2.com?a=semi\\;);}",
-					"#three{background:url(http\\:\\/\\/www.example3.com?a=semi\\;);}",
-					"#four{background:url(http\\:\\/\\/www.example4.com?a=semi\\;);}"
+					"#one{background:url(http\\:\\/\\/www\\.example1\\.com?a\\=semi\\;);}",
+					"#two{background:url(http\\:\\/\\/www\\.example2\\.com?a\\=semi\\;);}",
+					"#three{background:url(http\\:\\/\\/www\\.example3\\.com?a\\=semi\\;);}",
+					"#four{background:url(http\\:\\/\\/www\\.example4\\.com?a\\=semi\\;);}"
 				]
 			}
 		},
@@ -1029,7 +1515,7 @@
 					"\n\t\t\t\t\t#red > div.today + b.old, body.broken, #wtf {\n\n",
 					"\t\n\tbackground: url(\"http://www.example1.com?a=semi;\");;;;\n\n\n",
 					"\t\tborder: 1px solid red;;;;;\n\t\n\t",
-					"\tcolor: white;;;;;\n\t\n",
+					"\tcolor: white !important;;;;;\n\t\n",
 					"\n\t}\n\n\n",
 					"#next \t\t {\n",
 					"\t\n\tbackground: url(\"http://www.example2.com?a=semi;\");;;;\n\n\n",
@@ -1037,12 +1523,12 @@
 				],
 				"expect": [
 					"#red>div.today+b.old,body.broken,#wtf{",
-					"background: url(http\\:\\/\\/www.example1.com?a=semi\\;);",
+					"background: url(http\\:\\/\\/www\\.example1\\.com?a\\=semi\\;);",
 					"border: 1px solid red;",
-					"color: white;",
+					"color: white!important;",
 					"}",
 					"#next{",
-					"background: url(http\\:\\/\\/www.example2.com?a=semi\\;);",
+					"background: url(http\\:\\/\\/www\\.example2\\.com?a\\=semi\\;);",
 					"}"
 				]
 			}

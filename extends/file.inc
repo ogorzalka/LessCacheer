@@ -7,12 +7,12 @@ Class file extends LessCacheer
      * @param $file
      * @return int
      */
-    function modified($file)
+    public static function modified($file)
     {
         return (file_exists($file)) ? (int) filemtime($file) : 0;
     }
     
-    function get($type = 'user', $input, $force_recache = false)
+    public static function get($type = 'user', $input, $force_recache = false)
     {
         $basename        = basename($input); // filename
 
@@ -27,10 +27,10 @@ Class file extends LessCacheer
         return $data;
     }
     
-    function need_to_recache() {
+    public static function need_to_recache() {
         return (
-            !$this->conf['in_production'] ||
-            (!file_exists($this->cached_f) || file::modified($this->f) > file::modified($this->cached_f)) && $this->conf['in_production']
+            !LessCacheer::$conf['in_production'] ||
+            (!file_exists(LessCacheer::$cached_f) || file::modified(LessCacheer::$f) > file::modified(LessCacheer::$cached_f)) && $this->conf['in_production']
         );
     }
     
