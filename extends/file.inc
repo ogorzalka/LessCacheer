@@ -17,8 +17,8 @@ Class file extends LessCacheer
         $basename        = basename($input); // filename
 
         if ($type == 'mixins') {
-            if (!in_array(dirname($input).'/', $this->conf['less_options']['importDir'])) {
-                $this->conf['less_options']['importDir'][] = dirname($input).'/';
+            if (!in_array(dirname($input).'/', LessCacheer::$conf['less_options']['importDir'])) {
+                LessCacheer::$conf['less_options']['importDir'][] = dirname($input).'/';
             }
             $data                                      = "@import '$basename';";
         } else {

@@ -79,8 +79,7 @@ Class LessCacheer
         'unnecessary-semicolons' => true, 
     // Readibility of Compressed Output, Defaults to none
         'readability' => 3));
-    
-    
+
     /*
     Merge user-defined option with default configuration
     */
