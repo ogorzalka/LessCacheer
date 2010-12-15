@@ -9,9 +9,9 @@ Class headers extends LessCacheer
      * @param $value
      * @return boolean
      */
-    public static function set($name, $value)
+    function set($name, $value)
     {
-        return LessCacheer::$headers[$name] = $value;
+        return $this->headers[$name] = $value;
     }
     
     /**
@@ -19,12 +19,12 @@ Class headers extends LessCacheer
      *
      * @return void
      */
-    public static function send()
+    function send()
     {
         if (!headers_sent()) {
-            LessCacheer::$headers = array_unique(LessCacheer::$headers);
+            $this->headers = array_unique($this->headers);
             
-            foreach (LessCacheer::$headers as $name => $value) {
+            foreach ($this->headers as $name => $value) {
                 if ($name != '_status') {
                     header($name . ':' . $value);
                 } else {
@@ -38,7 +38,7 @@ Class headers extends LessCacheer
         }
     }
     
-    public static function set_compression($output, $level)
+    function set_compression($output, $level)
     {
         if ($level AND ini_get('output_handler') !== 'ob_gzhandler' AND (int) ini_get('zlib.output_compression') === 0) {
             if ($level < 1 OR $level > 9) {
@@ -81,9 +81,9 @@ Class headers extends LessCacheer
      * @param $param
      * @return return type
      */
-    public static function generate($modified, $lifetime, $length)
+    function generate($modified, $lifetime, $length)
     {
-        LessCacheer::$headers = array();
+        $this->headers = array();
         
         /**
          * Set the expires headers

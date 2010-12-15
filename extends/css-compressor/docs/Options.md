@@ -1,29 +1,6 @@
 Options
 =========
 
-Here's a few different ways to set options.
-
-	// Set an array of options
-	$options = array( 'color-long2hex' => false, 'readability' => CSSCompression::READ_MAX );
-
-	// Pass directly into express compression
-	$compressed = CSSCompression::express( $css, $options );
-
-	// Create an instance based on the predefined set of options
-	$CSSC = new CSSCompression( $options );
-
-	// Set a batch of options on an instance
-	$CSSC->option( $options );
-
-	// Set a single option on an instance
-	$CSSC->option( 'readability', CSSCompression::READ_MAX );
-
-	// Or, if you just want to read an option
-	$readability = $CSSC->option( 'readability' );
-
-	// Also, you can look at the current options
-	$options = $CSSC->option();
-
 
 color-long2hex
 --------------
@@ -47,14 +24,6 @@ color-hex2shortcolor
 Converts long hex codes to short color names, Only works on latest browsers, careful when using.
 
  - *#f5f5dc -> beige*
-
-
-color-hex2safe
---------------------
-
-Converts long hex codes to safe CSS Level 1 color names.
-
- - *#f00 -> red*
 
 
 color-hex2shorthex
@@ -89,28 +58,12 @@ Lowercases html tags from list
  - *BODY -> body*
 
 
-attr2selector
--------------
-
-Converts class and id attributes to their shorthand counterparts
-
- - *div[id=blah][class=blah] -> div#blah.blah*
-
-
-pseudo-space
+pseduo-space
 ------------
 
-Add space after :first-letter and :first-line pseudo selectors, for ie6
+Add space after pseduo selectors, for ie6
 
- - *a:first-line{ -> a:first-line {*
-
-
-strict-id
----------
-
-Promotes nested id's to the front of the selector
-
- - *body > div#elem p -> #elem p*
+ - *a:first-child{ -> a:first-child {*
 
 
 directional-compress
@@ -187,20 +140,6 @@ Combines list-style properties
  - *list-style-type: round; list-style-position: outside -> list-style:round outside*
 
 
-border-radius-combine
----------------------
-
-Combines border-radius properties
-
-	{
-	 border-top-left-radius: 10px;
-	 border-top-right-radius: 10px;
-	 border-bottom-right-radius: 10px;
-	 border-bottom-left-radius: 10px;
-	}
-	-> { border-radius: 10px; }
-
-
 unnecessary-semicolons
 ----------------------
 
@@ -209,26 +148,7 @@ Removes the last semicolon of a property set
  - *{margin: 2px; color: blue;} -> {margin: 2px; color: blue}*
 
 
-rm-multi-define
----------------
-
-Removes multiple declarations within the same rule set
-
- - *{color:black;font-size:12pt;color:red;} -> {color:red;font-size:12pt;}*
-
-
-add-unknown
------------
-
-Adds unknown artifacts to a comment block at the top of output.
-
-
 readability
 -----------
 
-Readibility of Compressed Output.
-
-	CSSCompression::READ_MAX; // Maximum readability
-	CSSCompression::READ_MED; // Medium readability
-	CSSCompression::READ_MIN; // Minimum readability
-	CSSCompression::READ_NONE; // No readability
+Readibility of Compressed Output, Defaults to none

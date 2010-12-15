@@ -13,12 +13,11 @@ Class CSSCompression_Organize
 	 * @class Control: Compression Controller
 	 * @param (array) options: Reference to options
 	 * @param (regex) rsemicolon: Checks for semicolon without an escape '\' character before it
-	 * @param (regex) rlastsemi: Checks for semicolon at the end of the string
 	 */
 	private $Control;
 	private $options = array();
 	private $rsemicolon = "/(?<!\\\);/";
-	private $rlastsemi = "/(?<!\\\);$/";
+	private $rlastsemi = "/;$/";
 
 	/**
 	 * Stash a reference to the controller on each instantiation
@@ -35,7 +34,7 @@ Class CSSCompression_Organize
 	 * of definitions.
 	 *
 	 * @param (array) selectors: Array of selectors, map directly to details
-	 * @param (array) details: Array of rule sets, map directly to selectors
+	 * @param (array) details: Array of details, map directly to selectors
 	 */
 	public function organize( &$selectors = array(), &$details = array() ) {
 		// Combining defns based on similar selectors
@@ -49,11 +48,11 @@ Class CSSCompression_Organize
 	}
 
 	/**
-	 * Combines multiply defined selectors by merging the rule sets,
-	 * latter declarations overide declaratins at top of file
+	 * Combines multiply defined selectors by merging the definitions,
+	 * latter definitions overide definitions at top of file
 	 *
 	 * @param (array) selectors: Array of selectors broken down by setup
-	 * @param (array) details: Array of rule sets broken down by setup
+	 * @param (array) details: Array of details broken down by setup
 	 */ 
 	private function reduceSelectors( $selectors, $details ) {
 		$max = array_pop( array_keys( $selectors ) ) + 1;
@@ -94,11 +93,11 @@ Class CSSCompression_Organize
 	}
 
 	/**
-	 * Combines multiply defined rule sets by merging the selectors
+	 * Combines multiply defined details by merging the selectors
 	 * in comma seperated format
 	 *
 	 * @param (array) selectors: Array of selectors broken down by setup
-	 * @param (array) details: Array of rule sets broken down by setup
+	 * @param (array) details: Array of details broken down by setup
 	 */ 
 	private function reduceDetails( $selectors, $details ) {
 		$max = array_pop( array_keys( $selectors ) ) + 1;

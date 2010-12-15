@@ -5,20 +5,11 @@
 #
 .PHONY: benchmark test
 
-all:
-	@echo "\n\x1B[1;31mPC_LOAD_LETTER\x1B[0m\n"
-
 test:
-	@php unit/Core.php
+	@php unit/start.php
 
 test-all:
-	@php unit/Core.php all
-
-test-focus:
-	@php unit/Focus.php
-
-test-file:
-	@php unit/File.php
+	@php unit/start.php all
 
 benchmark:
 	@php unit/benchmark/benchmark.php

@@ -11,7 +11,6 @@ Class CSSCompression_Compress
 	 * Trim Patterns
 	 *
 	 * @class Control: Compression Controller
-	 * @class Trim: Trim Instance
 	 * @class Setup: Setup Instance
 	 * @class Format: Formatting Instance
 	 * @class Combine: Combine Instance
@@ -25,7 +24,6 @@ Class CSSCompression_Compress
 	 * @param (regex) rspace: Checks for space without an escape '\' character before it
 	 */
 	private $Control;
-	private $Trim;
 	private $Setup;
 	private $Format;
 	private $Combine;
@@ -45,7 +43,6 @@ Class CSSCompression_Compress
 	 */
 	public function __construct( CSSCompression_Control $control ) {
 		$this->Control = $control;
-		$this->Trim = $control->Trim;
 		$this->Setup = $control->Setup;
 		$this->Format = $control->Format;
 		$this->Combine = $control->Combine;
@@ -58,11 +55,16 @@ Class CSSCompression_Compress
 
 	/**
 	 * Centralized function to run css compression.
+	 * Assumes trimming has already been done.
 	 *
-	 * @param (string) css: Stylesheet to compresss
+	 * @param (string) css: CSS Contents
 	 */ 
 	public function compress( $css ) {
-		$setup = $this->setup( $css );
+		// Do a little tokenizing, compress each property individually
+		$setup = $this->Setup->setup( $css );
+
+		// Mark number of selectors pre-combine
+		$this->stats['before']['selectors'] = count( $setup['selectors'] );
 
 		// Do selector specific compressions
 		$this->Selectors->selectors( $setup['selectors'] );
@@ -75,7 +77,6 @@ Class CSSCompression_Compress
 		if ( $this->options['organize'] ) {
 			$this->Cleanup->cleanup( $setup['selectors'], $setup['details'] );
 			$this->Organize->organize( $setup['selectors'], $setup['details'] );
-			$this->Combine->combine( $setup['selectors'], $setup['details'] );
 		}
 
 		// Do final maintenace work, remove injected property/values
@@ -87,7 +88,7 @@ Class CSSCompression_Compress
 		// Format css to users preference
 		$css = $this->Format->readability( $this->options['readability'], $setup['selectors'], $setup['details'] );
 
-		// Intros
+		// Check readability before adding intros
 		foreach ( $setup as $value ) {
 			if ( $value && is_string( $value ) ) {
 				$css = $value . $css;
@@ -95,7 +96,7 @@ Class CSSCompression_Compress
 		}
 
 		// Remove escapables
-		$css = $this->Cleanup->removeInjections( $css );
+		$css = $this->Cleanup->removeEscapedCharacters( $css );
 
 		// Attach plea to top of page with unknown blocks
 		if ( $this->options['add-unknown'] && count( $setup['unknown'] ) ) {
@@ -115,32 +116,9 @@ Class CSSCompression_Compress
 	}
 
 	/**
-	 * Runs css through initial setup handlers
-	 *
-	 * @param (string) css: Sheet to compress
-	 */
-	private function setup( $css ) {
-		// Initial stats
-		$this->stats['before']['time'] = microtime( true );
-		$this->stats['before']['size'] = strlen( $css );
-
-		// Initial trimming
-		$css = $this->Trim->trim( $css );
-
-		// Do a little tokenizing, compress each property individually
-		$setup = $this->Setup->setup( $css );
-
-		// Mark number of selectors pre-combine
-		$this->stats['before']['selectors'] = count( $setup['selectors'] );
-
-		return $setup;
-	}
-
-	/**
 	 * Runs final counts on selectors and props
 	 *
-	 * @param (array) selectors: Selector rules
-	 * @param (array) details: Rule sets
+	 * @params none
 	 */ 
 	private function finalCount( $selectors, $details ) {
 		// Selectors and props

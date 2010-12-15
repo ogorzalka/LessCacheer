@@ -34,8 +34,8 @@ Class CSSCompression_Option
 	 * 	- Passing both a name and value, sets the value to the name key, and returns the value
 	 *	- Passing an array will merge the options with the array passed, for object like extension
 	 *
-	 * @param (mixed) name: The key name of the option
-	 * @param (mixed) value: Value to set the option
+	 * @param (string|array) name: The key name of the option
+	 * @param (any) value: Value to set the option
 	 */
 	public function option( $name = NULL, $value = NULL ) {
 		if ( $name === NULL ) {
@@ -48,39 +48,52 @@ Class CSSCompression_Option
 			return isset( $this->options[ $name ] ) ? $this->options[ $name ] : NULL;
 		}
 		else {
-			$this->mode = '__custom';
-			return ( $this->options[ $name ] = $value );
+			return $this->options[ $name ] = $value;
+		}
+	}
+
+	/**
+	 * Adds or sets the current instances mode
+	 *
+	 * @param (string) mode: Name of the mode to use
+	 * @param (array) config: Array of config values to assign to a mode
+	 */
+	public function mode( $mode = NULL, $config = array() ) {
+		if ( $config && $mode && is_array( $config ) && count( $config ) ) {
+			return ( CSSCompression::$modes[ $mode ] = $config );
+		}
+		else if ( $mode ) {
+			return $this->merge( $mode );
 		}
 	}
 
 	/**
 	 * Reset's the default options
 	 *
-	 * @params none;
+	 * @param (boolean) clear: When true, options array is cleared
 	 */ 
-	public function reset(){
+	public function reset( $clear = false ) {
 		// Reset and return the new options
-		return $this->options = CSSCompression::$defaults;
+		return ( $this->options = $clear ? array() : CSSCompression::$defaults );
 	}
 
 	/**
 	 * Extend like function to merge an array of preferences into
 	 * the options array.
 	 *
-	 * @param (mixed) options: Array of preferences to merge into options
+	 * @param (array) options: Array of preferences to merge into options
 	 */ 
 	public function merge( $options = array() ) {
-		$modes = CSSCompression::modes();
 		if ( $options && is_array( $options ) && count( $options ) ) {
-			$this->Control->mode = '__custom';
+			$this->Control->mode = 'custom';
 			foreach ( $this->options as $key => $value ) {
 				if ( ! isset( $options[ $key ] ) ) {
 					continue;
 				}
-				else if ( strtolower( $options[ $key ] ) == 'on' ) {
+				else if ( $options[ $key ] && $options[ $key ] == 'on' ) {
 					$this->options[ $key ] = true;
 				}
-				else if ( strtolower( $options[ $key ] ) == 'off' ) {
+				else if ( $options[ $key ] && $options[ $key ] == 'off' ) {
 					$this->options[ $key ] = false;
 				}
 				else {
@@ -88,7 +101,7 @@ Class CSSCompression_Option
 				}
 			}
 		}
-		else if ( $options && is_string( $options ) && array_key_exists( $options, $modes ) ) {
+		else if ( $options && is_string( $options ) && array_key_exists( $options, CSSCompression::$modes ) ) {
 			$this->Control->mode = $options;
 
 			// Default all to true, the mode has to force false
@@ -99,7 +112,7 @@ Class CSSCompression_Option
 			}
 
 			// Merge mode into options
-			foreach ( $modes[ $options ] as $key => $value ) {
+			foreach ( CSSCompression::$modes[ $options ] as $key => $value ) {
 				$this->options[ $key ] = $value;
 			}
 		}

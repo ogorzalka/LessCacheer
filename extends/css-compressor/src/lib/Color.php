@@ -15,9 +15,8 @@ Class CSSCompression_Color
 	 * @param (regex) rrgb: Checks for rgb notation
 	 * @param (regex) rhex: Checks for hex code
 	 * @param (regex) rfullhex: Checks for full 6 character hex code
-	 * @static (array) color2hex: Long color name to hex code conversions
 	 * @static (array) hex2short: Hex code to short color name conversions
-	 * @static (array) hex2short_safe: CSS Level 1 safe color names that are shorter than hex codes
+	 * @static (array) long2hex: Long color name to hex code conversions
 	 */
 	private $Control;
 	private $options = array();
@@ -26,7 +25,6 @@ Class CSSCompression_Color
 	private $rfullhex = "/^#([0-9a-f]{6})$/i";
 	private static $color2hex = array();
 	private static $hex2short = array();
-	private static $hex2short_safe = array();
 
 	/**
 	 * Stash a reference to the controller on each instantiation
@@ -45,10 +43,6 @@ Class CSSCompression_Color
 
 			if ( ( self::$hex2short = CSSCompression::getJSON( 'hex2short-colors.json' ) ) instanceof CSSCompression_Exception ) {
 				throw self::$hex2short;
-			}
-
-			if ( ( self::$hex2short_safe = CSSCompression::getJSON( 'hex2short-safe.json' ) ) instanceof CSSCompression_Exception ) {
-				throw self::$hex2short_safe;
 			}
 		}
 	}
@@ -69,24 +63,19 @@ Class CSSCompression_Color
 			$val = $this->color2hex( $val );
 		}
 
-		// Ensure all hex codes are lowercase
-		if ( preg_match( $this->rhex, $val ) ) {
-			$val = strtolower( $val );
-		}
-
 		// Convert large hex codes to small codes
 		if ( $this->options['color-hex2shorthex'] ) {
 			$val = $this->hex2short( $val );
 		}
 
+		// Ensure all hex codes are lowercase
+		if ( preg_match( $this->rhex, $val ) ) {
+			$val = strtolower( $val );
+		}
+
 		// Convert 6 digit hex codes to short color names
 		if ( $this->options['color-hex2shortcolor'] ) {
 			$val = $this->hex2color( $val );
-		}
-
-		// Convert safe css level1 color names
-		if ( $this->options['color-hex2safe'] ) {
-			$val = $this->hex2safe( $val );
 		}
 
 		return $val;
@@ -152,15 +141,6 @@ Class CSSCompression_Color
 	 */
 	private function hex2color( $val ) {
 		return isset( self::$hex2short[ $val ] ) ? self::$hex2short[ $val ] : $val;
-	}
-
-	/**
-	 * Convert large hex codes to small codes
-	 *
-	 * @param (string) val: Color to be converted
-	 */
-	private function hex2safe( $val ) {
-		return isset( self::$hex2short_safe[ $val ] ) ? self::$hex2short_safe[ $val ] : $val;
 	}
 
 	/**

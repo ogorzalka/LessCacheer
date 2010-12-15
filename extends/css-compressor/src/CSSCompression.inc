@@ -35,10 +35,6 @@ Class CSSCompression
 		// Only works on latest browsers, careful when using
 		'color-hex2shortcolor' => false,
 
-		// Converts hex codes to safe CSS Level 1 color names
-		// (#F00 -> red)
-		'color-hex2safe' => true,
-
 		// Converts long hex codes to short hex codes
 		// (#44ff11 -> #4f1)
 		'color-hex2shorthex' => true,
@@ -55,17 +51,9 @@ Class CSSCompression
 		// (BODY -> body)
 		'lowercase-selectors' => true,
 
-		// Converts id and class attribute selectors, to their short selector counterpart
-		// (div[id=blah][class=moreblah] -> div#blah.moreblah)
-		'attr2selector' => true,
-
-		// Promotes nested id's to the front of the selector
-		// (body>div#elem p -> $elem p)
-		'strict-id' => false,
-
-		// Add space after pseudo selectors, for ie6
+		// Add space after pseduo selectors, for ie6
 		// (a:first-child{ -> a:first-child {)
-		'pseudo-space' => false,
+		'pseduo-space' => false,
 
 		// Compresses single defined multi-directional properties
 		// (margin: 15px 25px 15px 25px -> margin:15px 25px)
@@ -104,21 +92,13 @@ Class CSSCompression
 		// (list-style-type: round; list-style-position: outside -> list-style:round outside)
 		'list-combine' => true,
 
-		// Combines border-radius properties
-		// {
-		//  border-top-left-radius: 10px;
-		//  border-top-right-radius: 10px;
-		//  border-bottom-right-radius: 10px;
-		//  border-bottom-left-radius: 10px;
-		// }
-		// -> { border-radius: 10px; }
-		'border-radius-combine' => true,
-
 		// Removes the last semicolon of a property set
 		// ({margin: 2px; color: blue;} -> {margin: 2px; color: blue})
 		'unnecessary-semicolons' => true,
 
-		// Removes multiple declarations within the same rule set
+		// Removes multiply defined properties
+		// STRONGLY suggested to keep this true, unless you have
+		// a box model or other hacks
 		'rm-multi-define' => true,
 
 		// Adds all unknown blocks to the top of the output in a comment strip
@@ -148,15 +128,12 @@ Class CSSCompression
 	 * defines which options are to be false
 	 *
 	 * @mode safe: Keeps selector and detail order, and prevents hex to shortname conversion
-	 * @mode sane: Does most combinations while keeping selector order.
 	 * @mode medium: Prevents hex to shortname conversion
 	 * @mode small: Full compression
 	 */
-	private static $modes = array(
+	public static $modes = array(
 		'safe' => array(
 			'color-hex2shortcolor' => false,
-			'attr2selector' => false,
-			'strict-id' => false,
 			'organize' => false,
 			'csw-combine' => false,
 			'auralcp-combine' => false,
@@ -165,22 +142,18 @@ Class CSSCompression
 			'font-combine' => false,
 			'background-combine' => false,
 			'list-combine' => false,
-			'border-radius-combine' => false,
-			'rm-multi-define' => false,
+			'rm-multi-define' => false,		
 		),
 		'sane' => array(
 			'color-hex2shortcolor' => false,
-			'strict-id' => false,
 			'organize' => false,
-			'rm-multi-define' => false,
+		),
+		'medium' => array(
+			'color-hex2shortcolor' => false,
+			'pseduo-space' => false
 		),
 		'small' => array(
-			'color-hex2shortcolor' => false,
-			'strict-id' => false,
-			'pseudo-space' => false,
-		),
-		'full' => array(
-			'pseudo-space' => false,
+			'pseduo-space' => false
 		),
 	);
 
@@ -189,22 +162,11 @@ Class CSSCompression
 	 *
 	 * @instance express: Use a separate instance from singleton access 
 	 * @instance instance: Saved instance of CSSCompression
-	 * @param (array) instances: Array of stored instances
-	 * @param (array) rjson: Comment removal before json decoding
+	 * @param (regex) rjson: Simple single line comment cleaner for json files
 	 */
 	private static $express;
 	private static $instance;
-	private static $instances = array();
-	private static $rjson = array(
-		'patterns' => array(
-			"/^(.*?){/s", 
-			"/(\t|\s)+\/\/.*/",
-		),
-		'replacements' => array(
-			'{',
-			'',
-		),
-	);
+	private static $rjson = "/(\t|\s)+\/\/.*/";
 
 	/**
 	 * Controller Instance
@@ -223,11 +185,11 @@ Class CSSCompression
 		// Autorun against css passed
 		if ( $css ) {
 			// Allow passing options/mode only
-			if ( is_array( $css ) || array_key_exists( $css, self::$modes ) ) {
+			if ( is_array( $css ) || ( strlen( $css ) < 15 && array_key_exists( $css, self::$modes ) ) ) {
 				$this->Control->Option->merge( $css );
 			}
 			else {
-				$this->Control->compress( $css, $options );
+				$this->css = $this->Control->compress( $css, $options );
 			}
 		}
 		// Merge passed options
@@ -254,7 +216,7 @@ Class CSSCompression
 	 * access to setting values in the options array
 	 *
 	 * @param (string) name: Key name of the option you want to set
-	 * @param (mixed) value: Value of the option you want to set
+	 * @param (any) value: Value of the option you want to set
 	 */ 
 	public function __set( $name, $value ) {
 		return $this->Control->set( $name, $value );
@@ -266,28 +228,17 @@ Class CSSCompression
 	 * @param (string) mode: Name of mode to use.
 	 */
 	public function mode( $mode = NULL ) {
-		return $this->Control->Option->merge( $mode );
+		return $this->Control->Option->mode( $mode );
 	}
 
 	/**
 	 * Creates a new mode, or overwrites existing mode
 	 *
-	 * @param (mixed) mode: Name of the mode, or array of modes
+	 * @param (string) mode: Name of the mode
 	 * @param (array) config: Configuration of the mode
 	 */
-	public static function modes( $mode = NULL, $config = NULL ) {
-		if ( $mode === NULL ) {
-			return self::$modes;
-		}
-		else if ( is_array( $mode ) ) {
-			return array_merge( self::$modes, $mode );
-		}
-		else if ( $config === NULL ) {
-			return isset( self::$modes[ $mode ] ) ? self::$modes[ $mode ] : NULL;
-		}
-		else {
-			return self::$modes[ $mode ] = $config;
-		}
+	public static function addMode( $mode = NULL, $config = array() ) {
+		return is_string( $mode ) ? CSSCompression::$modes[ $mode ] = $config : NULL;
 	}
 
 	/**
@@ -298,18 +249,18 @@ Class CSSCompression
 	 *	- Passing an array will merge the options with the array passed, for object like extension
 	 * 	- Passing both a name and value, sets the value to the name key, and returns the value
 	 *
-	 * @param (mixed) name: The key name of the option
-	 * @param (mixed) value: Value to set the option
+	 * @param (string|array) name: The key name of the option
+	 * @param (any) value: Value to set the option
 	 */
 	public function option( $name = NULL, $value = NULL ) {
 		return $this->Control->Option->option( $name, $value );
 	}
 
 	/**
-	 * (Proxy function) Run compression on the sheet passed.
+	 * (Proxy function) Run compression on the sheet passed
 	 *
 	 * @param (string) css: Stylesheet to be compressed
-	 * @param (mixed) options: Array of options or mode to use.
+	 * @param (array|string) options: Array of options or mode to use.
 	 */
 	public function compress( $css = NULL, $options = NULL ) {
 		return $this->Control->compress( $css, $options );
@@ -319,18 +270,19 @@ Class CSSCompression
 	 * Static access for direct compression
 	 *
 	 * @param (string) css: Stylesheet to be compressed
-	 * @param (mixed) options: Array of options or mode to use.
+	 * @param (array|string) options: Array of options or mode to use.
 	 */
 	public static function express( $css = NULL, $options = NULL ) {
 		if ( ! self::$express ) {
 			self::$express = new CSSCompression();
 		}
 
+		self::$express->reset();
 		return self::$express->compress( $css, $options );
 	}
 
 	/**
-	 * (Proxy Function) Cleans out compressor and it's subclasses to defaults
+	 * Cleans out compressor and it's subclasses to defaults
 	 *
 	 * @params none
 	 */
@@ -339,7 +291,7 @@ Class CSSCompression
 	}
 
 	/**
-	 * (Proxy Function) Cleans out class variables for next run
+	 * Cleans out class variables for next run
 	 *
 	 * @params none
 	 */
@@ -350,17 +302,10 @@ Class CSSCompression
 	/**
 	 * The Singleton access method (for those that want it)
 	 *
-	 * @param (string) name: Name of the stored instance
+	 * @params none
 	 */
-	public static function getInstance( $name = NULL ) {
-		if ( $name !== NULL ) {
-			if ( ! isset( self::$instances[ $name ] ) ) {
-				self::$instances[ $name ] = new self;
-			}
-
-			return self::$instances[ $name ];
-		}
-		else if ( ! self::$instance ) {
+	public static function getInstance(){
+		if ( ! self::$instance ) {
 			self::$instance = new self;
 		}
 
@@ -377,7 +322,7 @@ Class CSSCompression
 		$file = $file[ 0 ] == '/' ? $file : dirname(__FILE__) . '/helpers/' . $file;
 
 		// Strip comments
-		$json = preg_replace( self::$rjson['patterns'], self::$rjson['replacements'], file_get_contents( $file ) );
+		$json = preg_replace( self::$rjson, '', file_get_contents( $file ) );
 
 		// Decode json
 		$json = json_decode( $json, true );

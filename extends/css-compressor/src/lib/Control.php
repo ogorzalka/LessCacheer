@@ -12,12 +12,12 @@ Class CSSCompression_Control
 	 *
 	 * @param (string) css: Holds compressed css string
 	 * @param (string) mode: Current compression mode state
-	 * @param (string) token: Special injection token
+	 * @param (array) options: Holds compression options
 	 * @param (array) stats: Holds compression stats
 	 */ 
 	public $css = '';
-	public $mode = '__custom';
-	public $token = '@___CSSCOMPRESSION_TOKEN___';
+	public $mode = 'custom';
+	public $options = array();
 	public $stats = array();
 
 	/**
@@ -78,18 +78,21 @@ Class CSSCompression_Control
 	/**
 	 * Control access to properties
 	 *
-	 *	- Getting stats/_mode/css/token returns the current value of that property
+	 *	- Getting stats/_mode/css returns the current value of that property
 	 *	- Getting options will return the current full options array
 	 *	- Getting anything else returns that current value in the options array or NULL
 	 *
 	 * @param (string) name: Name of property that you want to access
 	 */ 
 	public function get( $name ) {
-		if ( $name == 'css' || $name == 'mode' || $name == 'stats' || $name == 'token' ) {
+		if ( $name == 'css' || $name == 'mode' ) {
 			return $this->$name;
 		}
 		else if ( $name == 'options' ) {
 			return $this->Option->options;
+		}
+		else if ( $name == 'stats' ) {
+			return $this->stats;
 		}
 		else {
 			return $this->Option->option( $name );
@@ -100,7 +103,7 @@ Class CSSCompression_Control
 	 * The setter method only allows access to setting values in the options array
 	 *
 	 * @param (string) name: Key name of the option you want to set
-	 * @param (mixed) value: Value of the option you want to set
+	 * @param (any) value: Value of the option you want to set
 	 */ 
 	public function set( $name, $value ) {
 		// Allow for passing array of options to merge into current ones
@@ -154,31 +157,25 @@ Class CSSCompression_Control
 	}
 
 	/**
-	 * Proxy to run Compression on the sheet passed. Handle options here.
+	 * Proxy to run Compression on the sheet passed
 	 *
 	 * @param (string) css: Stylesheet to be compressed
-	 * @param (mixed) options: Array of options or mode to use.
+	 * @param (array|string) options: Array of options or mode to use.
 	 */
 	public function compress( $css = NULL, $options = NULL ) {
-		// Flush out old stats and variables
+		// Reset and merge options
 		$this->flush();
-
-		// If no additional options, just run compression
-		if ( $options === NULL ) {
-			return $this->css = $this->Compress->compress( $css );
-		}
-
-		// Store old params
-		$old = $this->mode == '__custom' ? $this->Option->option() : $this->mode;
-		$readability = $this->Option->option( 'readability' );
-
-		// Compress with new set of options
 		$this->Option->merge( $options );
-		$css = $this->Compress->compress( $css );
 
-		// Reset original options
-		$this->reset();
-		$this->Option->merge( $old );
+		// Initial stats
+		$this->stats['before']['time'] = microtime( true );
+		$this->stats['before']['size'] = strlen( $css );
+
+		// Initial trimming
+		$css = $this->Trim->trim( $css );
+
+		// Run compression
+		$css = $this->Compress->compress( $css, $options );
 
 		// Return the compressed css
 		return $this->css = $css;
@@ -194,12 +191,6 @@ Class CSSCompression_Control
 	public function access( $class, $method, $args ) {
 		if ( $class == 'Control' ) {
 			return call_user_func_array( array( $class, $method ), $args );
-		}
-		else if ( strpos( $class, '.' ) !== false ) {
-			$parts = explode( '.', $class );
-			$class = $parts[ 0 ];
-			$subclass = $parts[ 1 ];
-			return $this->$class->access( $subclass, $method, $args );
 		}
 		else if ( in_array( $class, $this->subclasses ) ) {
 			return $this->$class->access( $method, $args );

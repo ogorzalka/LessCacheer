@@ -7,18 +7,18 @@ Class file extends LessCacheer
      * @param $file
      * @return int
      */
-    public static function modified($file)
+    function modified($file)
     {
         return (file_exists($file)) ? (int) filemtime($file) : 0;
     }
     
-    public static function get($type = 'user', $input, $force_recache = false)
+    function get($type = 'user', $input, $force_recache = false)
     {
         $basename        = basename($input); // filename
 
         if ($type == 'mixins') {
-            if (!in_array(dirname($input).'/', LessCacheer::$conf['less_options']['importDir'])) {
-                LessCacheer::$conf['less_options']['importDir'][] = dirname($input).'/';
+            if (!in_array(dirname($input).'/', $this->conf['less_options']['importDir'])) {
+                $this->conf['less_options']['importDir'][] = dirname($input).'/';
             }
             $data                                      = "@import '$basename';";
         } else {
@@ -27,10 +27,10 @@ Class file extends LessCacheer
         return $data;
     }
     
-    public static function need_to_recache() {
+    function need_to_recache() {
         return (
-            !LessCacheer::$conf['in_production'] ||
-            (!file_exists(LessCacheer::$cached_f) || file::modified(LessCacheer::$f) > file::modified(LessCacheer::$cached_f)) && $this->conf['in_production']
+            !$this->conf['in_production'] ||
+            (!file_exists($this->cached_f) || file::modified($this->f) > file::modified($this->cached_f)) && $this->conf['in_production']
         );
     }
     
