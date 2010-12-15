@@ -11,19 +11,27 @@ Class CSSCompression_Cleanup
 	/**
 	 * Cleanup patterns
 	 *
-	 * @class $Control: Compression Controller
+	 * @class Control: Compression Controller
+	 * @param (string) token: Copy of the injection token
+	 * @param (regex) rtoken: Token regex built upon instantiation
 	 * @param (array) options: Reference to options
 	 * @param (regex) rsemi: Checks for last semit colon in details
 	 * @param (regex) rsemicolon: Checks for semicolon without an escape '\' character before it
+	 * @param (regex) rspace: Checks for space without an escape '\' character before it
 	 * @param (regex) rcolon: Checks for colon without an escape '\' character before it
+	 * @param (regex) rquote: Checks for quote (') without an escape '\' character before it
 	 * @param (array) rescape: Array of patterns for groupings that should be escaped
 	 * @param (array) escaped: Contains patterns and replacements for espaced characters
 	 */
 	private $Control;
+	private $token = '';
+	private $rtoken = '';
 	private $options = array();
 	private $rsemi = "/;$/";
 	private $rsemicolon = "/(?<!\\\);/";
+	private $rspace = "/(?<!\\\)\s/";
 	private $rcolon = "/(?<!\\\):/";
+	private $rquote = "/(?<!\\\)'/";
 	private $rescape = array(
 		"/((?<!\\\)\")(.*?)((?<!\\\)\")/",
 		"/((?<!\\\)')(.*?)((?<!\\\)')/",
@@ -36,12 +44,16 @@ Class CSSCompression_Cleanup
 			"\\}",
 			"\\{",
 			"\\@",
+			"\\!",
 			"\\,",
 			"\\>",
 			"\\+",
 			"\\~",
 			"\\/",
 			"\\*",
+			"\\.",
+			"\\=",
+			"\\#",
 			"\\r",
 			"\\n",
 			"\\t",
@@ -53,12 +65,16 @@ Class CSSCompression_Cleanup
 			"}",
 			"{",
 			"@",
+			"!",
 			",",
 			">",
 			"+",
 			"~",
 			"/",
 			"*",
+			".",
+			"=",
+			"#",
 			"\r",
 			"\n",
 			"\t",
@@ -73,7 +89,12 @@ Class CSSCompression_Cleanup
 	 */
 	public function __construct( CSSCompression_Control $control ) {
 		$this->Control = $control;
+		$this->token = $control->token;
 		$this->options = &$control->Option->options;
+
+		// Have to build the token regexs after initialization
+		$this->rtoken = "/($this->token)(.*?)($this->token)/";
+		array_push( $this->rescape, $this->rtoken );
 	}
 
 	/**
@@ -83,10 +104,17 @@ Class CSSCompression_Cleanup
 	 * @param (array) details: Array of details
 	 */
 	public function cleanup( &$selectors, &$details ) {
-		foreach ( $details as &$value ) {
+		foreach ( $details as $i => &$value ) {
+			// Auto skip sections
+			if ( isset( $selectors[ $i ] ) && strpos( $selectors[ $i ], $this->token ) === 0 ) {
+				continue;
+			}
+
+			// Removing dupes
 			if ( $this->options['rm-multi-define'] ) {
 				$value = $this->removeMultipleDefinitions( $value );
 			}
+
 			$value = $this->removeUnnecessarySemicolon( $value );
 		}
 
@@ -96,17 +124,34 @@ Class CSSCompression_Cleanup
 	/**
 	 * Removes '\' from possible splitter characters in URLs
 	 *
-	 * @params none
+	 * @param (string) css: Full css sheet
 	 */ 
-	public function removeEscapedCharacters( $css ) {
+	public function removeInjections( $css ) {
+		// Remove escaped characters
 		foreach ( $this->rescape as $regex ) {
-			$start = 0;
-			while ( preg_match( $regex, $css, $match, PREG_OFFSET_CAPTURE, $start ) ) {
+			$pos = 0;
+			while ( preg_match( $regex, $css, $match, PREG_OFFSET_CAPTURE, $pos ) ) {
 				$value = $match[ 1 ][ 0 ]
 					. str_replace( $this->escaped['search'], $this->escaped['replace'], $match[ 2 ][ 0 ] )
 					. $match[ 3 ][ 0 ];
 				$css = substr_replace( $css, $value, $match[ 0 ][ 1 ], strlen( $match[ 0 ][ 0 ] ) );
-				$start = $match[ 0 ][ 1 ] + strlen( $value ) + 1;
+				$pos = $match[ 0 ][ 1 ] + strlen( $value ) + 1;
+			}
+		}
+
+		// Remove token injections
+		$pos = 0;
+		while ( preg_match( $this->rtoken, $css, $match, PREG_OFFSET_CAPTURE, $pos ) ) {
+			$value = $match[ 2 ][ 0 ];
+			if ( preg_match( $this->rspace, $value ) ) {
+				$quote = preg_match( $this->rquote, $value ) ? "\"" : "'";
+				$value = "$quote$value$quote";
+				$css = substr_replace( $css, $value, $match[ 0 ][ 1 ], strlen( $match[ 0 ][ 0 ] ) );
+				$pos = $match[ 0 ][ 1 ] + strlen( $value ) + 1;
+			}
+			else {
+				$css = substr_replace( $css, $value, $match[ 0 ][ 1 ], strlen( $match[ 0 ][ 0 ] ) );
+				$pos = $match[ 0 ][ 1 ] + strlen( $value ) + 1;
 			}
 		}
 
@@ -143,7 +188,7 @@ Class CSSCompression_Cleanup
 	/**
 	 * Removes last semicolons on the final property of a set
 	 *
-	 * @params none
+	 * @param (string) value: rule set
 	 */ 
 	private function removeUnnecessarySemicolon( $value ) {
 		return preg_replace( $this->rsemi, '', $value );

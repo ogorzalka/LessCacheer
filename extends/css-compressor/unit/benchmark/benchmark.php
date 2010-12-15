@@ -10,16 +10,30 @@ require( dirname(__FILE__) . '/../color.php');
 
 Class CompressionBenchmark
 {
+	/**
+	 * Benchmark Patterns
+	 *
+	 * @param (string) root: Path to this current directory
+	 * @param (array) files: List of files read
+	 * @param (array) averages: List of averages of compressions
+	 * @param (array) instances: List of each modes instance
+	 */
 	private $root = '';
 	private $files = array();
 	private $averages = array();
 	private $instances = array();
 
+	/**
+	 * Run compressions through every src file with each mode
+	 *
+	 * @params none;
+	 */
 	public function __construct(){
 		$this->root = dirname(__FILE__) . '/';
 
 		// Create the basice mode instances
-		foreach( CSSCompression::$modes as $mode => $config ) {
+		$modes = CSSCompression::modes();
+		foreach( $modes as $mode => $config ) {
 			$this->instances[ $mode ] = new CSSCompression( NULL, $mode );
 			$this->averages[ $mode ] = array(
 				'size-before' => 0,
@@ -38,6 +52,11 @@ Class CompressionBenchmark
 		$this->render();
 	}
 
+	/**
+	 * Handes overall compression needs
+	 *
+	 * @params none;
+	 */
 	private function render(){
 		// Do benchmarks on every css file
 		$handle = opendir( $this->root . 'src/' );
@@ -85,9 +104,16 @@ Class CompressionBenchmark
 		file_put_contents( $this->root . 'dist/results.json', json_encode( array( 'files' => $this->files, 'averages' => $this->averages ) ) );
 	}
 
+	/**
+	 * Individual mode on file compression
+	 *
+	 * @param (string) file: filename
+	 * @param (string) css: File contents
+	 * @param (instance) instance: Compression instance
+	 */
 	private function compress( $file = '', $css = '', $instance ) {
 		file_put_contents( $this->root . 'dist/' . $file . '.' . $instance->mode, $instance->compress( $css ) );
-		$gzip = gzencode( $instance->css );
+		$gzip = gzencode( $instance->css, 1 );
 
 		// References
 		$before = $instance->stats['before'];
@@ -123,6 +149,7 @@ Class CompressionBenchmark
 };
 
 
+// Autostart the benchmarks
 new CompressionBenchmark;
 
 ?>

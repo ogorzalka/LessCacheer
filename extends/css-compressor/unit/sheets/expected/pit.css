@@ -2,12 +2,6 @@
 @import url(import4.css) tv,print;
 @import url(yesterday.css);
 @import url(today.css);
-@font-face {
-	font-family:'Graublau Web';
-	src:url(GraublauWeb.eot);
-	src:local('☺'),url(GraublauWeb.otf) format('opentype')
-}
-
 @media all {
 	* html div {
 		color: #000;
@@ -15,7 +9,7 @@
 	}
 	
 	div > p.example {
-		font-size: 15px
+		font-size: 15px!important
 	}
 	
 	h1, h2, h3 > a {
@@ -23,7 +17,7 @@
 	}
 }
 
-body > div + a :first-child {
+body > div[title='spacing test\'s'] + a[href$=nospace] :first-child {
 	color: #000;
 	background: #fff url(http://www.example.com/body-bg.png?a=semi;);
 	margin: 0 auto;
@@ -42,8 +36,9 @@ pre, code, div.code {
 }
 
 div.same {
-	color: blue;
+	color: red!important;
 	font-size: 15.2%;
 	margin: 20px;
-	background: red
+	background: red;
+	content: 0!important
 }
