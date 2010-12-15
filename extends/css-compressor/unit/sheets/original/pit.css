@@ -18,7 +18,7 @@ This is just a cluster of various templates that can be compressed
 	}
 
 	div > p.example {
-		font-size: 15px;
+		font-size: 15.0px !important;
 	}
 
 	h1, h2, h3 > a {
@@ -26,17 +26,8 @@ This is just a cluster of various templates that can be compressed
 	}
 }
 
-
-/* Thank you Paul Irish - http://paulirish.com/2009/bulletproof-font-face-implementation-syntax/ */
-@font-face {
-	font-family: 'Graublau Web';
-	src: url('GraublauWeb.eot');
-	src: local('☺'),
-		url('GraublauWeb.otf') format('opentype');
-}
-
 /* basic elements */
-body > div + a :first-child {
+body > div[title='spacing test\'s'] + a[href$='nospace'] :first-child {
 	color: black;
 	background-color: white;
 	background-image: url(http://www.example.com/body-bg.png?a=semi;);
@@ -71,11 +62,12 @@ div.code {
 }
 
 div.same {
-	color: blue;
+	color: #FF0000 !important;
 	font-size: 15.2%;
 }
 
 div.same {
 	margin: 20.0px 20px;
 	background: red;
+	content: 0px !important;
 }
