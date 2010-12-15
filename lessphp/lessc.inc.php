@@ -50,7 +50,7 @@ class lessc {
 	public $importDir = '';
   
 	// Option to make LessPHP update Urls and keep them relative from compiled file.
-	public $updateUrls = false;
+	public $updateUrls = true;
 	
 	// Options to make LessPHP work with FireLess
 	private $levelImport = 0; // level inside the different imported less files
