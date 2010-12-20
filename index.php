@@ -19,7 +19,7 @@ Class LessCacheer
     public static $less; // less object
     public static $debug_info = null;
     public static $headers;
-    public static $conf = array('install_path' => '', 'mixins_path' => 'lessphp/mixins', 'cache_path' => 'cache', 'debug_info' => true, // display original line and less files within Fireless addons for Firefox
+    public static $conf = array('mixins_path' => 'mixins', 'cache_path' => 'cache', 'debug_info' => true, // display original line and less files within Fireless addons for Firefox
         'in_production' => true, 'cachetime' => 1314000, 'use_compression' => false, 'less_options' => array('importDir' => array()), 'compression_options' => array(
     // Converts long color names to short hex names
     // (aliceblue -> #f0f8ff)
@@ -159,7 +159,7 @@ Class LessCacheer
     */
     function collect_lessfiles()
     {
-        self::$less_files['mixins'] = self::rglob(self::$conf['base_path'] . self::$conf['mixins_path'] . '/*.less');
+        self::$less_files['mixins'] = self::rglob(self::$conf['mixins_path'] . '/*.less');
         self::$less_files['user']   = self::$f;
         
         // explode less files
@@ -173,53 +173,26 @@ Class LessCacheer
         return $this;
     }
     
+    private static function clean_path($p) {
+    	$p = str_replace(array('\\', '//'), '/', $p);
+    	return $p;
+    }
+    
     /*
     generated every useful paths
     */
     function generate_paths()
     {
-        $sapi = 'undefined';
-        if (!strstr($_SERVER['PHP_SELF'], $_SERVER['SCRIPT_NAME']) && ($sapi = @php_sapi_name()) == 'cgi') {
-            $script_name = $_SERVER['PHP_SELF'];
-        } else {
-            $script_name = $_SERVER['SCRIPT_NAME'];
-        }
-        $a = explode("/" . self::$conf['install_path'], str_replace("\\", "/", dirname($script_name)));
-        if (count($a) > 1)
-            array_pop($a);
-        $url = implode(self::$conf['install_path'], $a);
-        reset($a);
-        $a = explode(self::$conf['install_path'], str_replace("\\", "/", dirname(__FILE__)));
-        if (count($a) > 1)
-            array_pop($a);
-        $pth = implode(self::$conf['install_path'], $a);
-        unset($a);
-        self::$conf['base_url']       = $url . (substr($url, -1) != "/" ? "/" : "");
-        self::$conf['base_path']      = $pth . (substr($pth, -1) != "/" && substr($pth, -1) != "\\" ? "/" : "");
-        self::$conf['folder_install'] = str_replace($_SERVER['DOCUMENT_ROOT'], '', self::$conf['base_path']);
-        
-        self::$conf['origin_install'] = (in_array(self::$conf['folder_install'], array(
-            '/',
-            ''
-        ))) ? self::$conf['base_path'] : str_replace(self::$conf['folder_install'], '', self::$conf['base_path']);
-        
-        self::$f = self::$conf['origin_install'] . self::$f; // this less files !
-        
-        // target cached path
-        self::$conf['filecache_path'] = self::$conf['cache_path'] . str_replace(array(
-            self::$conf['origin_install'],
+    	self::$conf['base_path'] = self::clean_path(dirname(__FILE__)).'/';
+    	self::$conf['mixins_path'] = self::$conf['base_path'].self::$conf['mixins_path'];
+    	self::$f = self::clean_path($_SERVER['DOCUMENT_ROOT'].self::$f);
+    	self::$conf['filecache_path'] = self::$conf['cache_path'] .'/'. str_replace(array(
+            $_SERVER['DOCUMENT_ROOT'],
             basename(self::$f)
         ), array(
-            self::$conf['base_url'] . self::$conf['install_path'],
             ''
         ), self::$f);
-        self::$cached_f               = self::$conf['filecache_path'] . str_replace('.less', '.css', basename(self::$f)); // target main cached css
-        
-        // assign site_url
-        self::$conf['site_url'] = 'http://';
-        self::$conf['site_url'] .= $_SERVER['HTTP_HOST'];
-        self::$conf['site_url'] = str_replace(':' . $_SERVER['SERVER_PORT'], '', self::$conf['site_url']); // remove port from HTTP_HOST  
-        self::$conf['site_url'] .= self::$conf['base_url'];
+        self::$cached_f = self::$conf['filecache_path'] . str_replace('.less', '.css', basename(self::$f)); // target main cached css
     }
     
     /*
@@ -229,8 +202,6 @@ Class LessCacheer
     {
         self::$less             = new lessc(); // instantiate Less
         self::$less->importDir  = self::$conf['less_options']['importDir']; // define import Directories
-        self::$less->debug_info = self::$conf['debug_info'];
-        self::$less->addParsedFile(self::$f);
         
         self::$output = self::$less->parse(self::$input); // parse the less file
         
@@ -266,7 +237,7 @@ Class LessCacheer
      * @param $output What to display
      * @return void
      */
-    function render_css($level = false) {
+    public static function render_css($level = false) {
         $length   = strlen(self::$output);
         $modified = (self::$conf['in_production'] === true) ? file::modified(self::$cached_f) : file::modified(self::$f);
         $lifetime = (self::$conf['in_production'] === true) ? self::$conf['cachetime'] : 0;
@@ -280,6 +251,7 @@ Class LessCacheer
         echo self::$output;
         exit;
     }
+    
     /**
      * Renders the CSS
      *
@@ -327,14 +299,15 @@ Class LessCacheer
             
             self::generate_paths(); // generate path config
             if (file::need_to_recache()) {
+            	LessCacheer::$conf['less_options']['importDir'][] = dirname(self::$f).'/';
                 self::log("   Just recached !\n");
                 self::collect_lessfiles() // include every less you take !
                      ->less_to_css() // convert less to css
                      ->format_css() // last css formats
                      ->render_css(); // print the final css
             } else {
-                file::get_contents(self::$cached_f)
-                    ->render_css(); // print the cached css
+                self::$output = file::get_contents(self::$cached_f);
+                self::render_css(); // print the cached css
             }
         }
         /**

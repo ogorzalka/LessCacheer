@@ -35,7 +35,7 @@ Class file extends LessCacheer
     }
     
     public static function get_contents($path) {
-        LessCacheer::$output = file_get_contents($path);
-        return $this;
+        $output = file_get_contents($path);
+        return $output;
     }
 }

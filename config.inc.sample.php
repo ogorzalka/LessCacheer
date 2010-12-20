@@ -1,13 +1,12 @@
 <?php
 $conf = array(
-    'css_dir' => '', // css directory (ex: css/ )
-    'install_path' => 'modeles/lessphp', // install directory (ex: lessphp)
-    'mixins_path' => 'lessphp/mixins', // folder wich contain useful less files
+    'mixins_path' => 'mixins', // folder wich contain useful less files
     'cache_mixins' => true,
-    'in_production' => false,
-    'debug_info' => false,
+    'in_production' => true,
+    'debug_info' => true,
     'cachetime' => 3600,
     'use_compression' => true,
+    'less_options' => array('importDir' => array()),
     'compression_options' => array(
 		// Converts long color names to short hex names
 		// (aliceblue -> #f0f8ff)
