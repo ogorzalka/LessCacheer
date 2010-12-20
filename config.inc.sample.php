@@ -5,6 +5,7 @@ $conf = array(
     'mixins_path' => 'lessphp/mixins', // folder wich contain useful less files
     'cache_mixins' => true,
     'in_production' => false,
+    'debug_info' => false,
     'cachetime' => 3600,
     'use_compression' => true,
     'compression_options' => array(
