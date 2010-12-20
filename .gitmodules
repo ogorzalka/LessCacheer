@@ -1,0 +1,3 @@
+[submodule "lessphp"]
+	path = lessphp
+	url = git@github.com:clearideaz/lessphp.git
