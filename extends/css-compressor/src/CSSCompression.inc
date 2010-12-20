@@ -20,6 +20,25 @@ Class CSSCompression
 	const DEV = true;
 
 	/**
+	 * TOKEN is a special string that gets used as a marker within
+	 * the compressor, and is removed before final output. Make sure
+	 * this token is unique to your stylsheets.
+	 *
+	 * NOTE: This string gets used in regular expressions, and escaping
+	 * won't help, so don't pick a complicated token.
+	 */
+	const TOKEN = "@____CSSCOMPRESSION_TOKEN____@";
+
+	/**
+	 * CSSCompression Metadata
+	 *
+	 * @const (string) VERSION: Release version
+	 * @const (string) DATE: Release date
+	 */
+	const VERSION = "[VERSION]";
+	const DATE = "[DATE]";
+
+	/**
 	 * The default set of options for every instance.
 	 */
 	public static $defaults = array(
@@ -35,13 +54,13 @@ Class CSSCompression
 		// Only works on latest browsers, careful when using
 		'color-hex2shortcolor' => false,
 
-		// Converts hex codes to safe CSS Level 1 color names
-		// (#F00 -> red)
-		'color-hex2safe' => true,
-
 		// Converts long hex codes to short hex codes
 		// (#44ff11 -> #4f1)
 		'color-hex2shorthex' => true,
+
+		// Converts hex codes to safe CSS Level 1 color names
+		// (#F00 -> red)
+		'color-hex2safe' => true,
 
 		// Converts font-weight names to numbers
 		// (bold -> 700)
@@ -172,6 +191,9 @@ Class CSSCompression
 			'color-hex2shortcolor' => false,
 			'strict-id' => false,
 			'organize' => false,
+			'font-combine' => false,
+			'background-combine' => false,
+			'list-combine' => false,
 			'rm-multi-define' => false,
 		),
 		'small' => array(

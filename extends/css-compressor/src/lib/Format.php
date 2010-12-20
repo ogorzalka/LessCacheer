@@ -36,7 +36,7 @@ Class CSSCompression_Format
 	 */
 	public function __construct( CSSCompression_Control $control ) {
 		$this->Control = $control;
-		$this->token = $control->token;
+		$this->token = CSSCompression::TOKEN;
 		$this->options = &$control->Option->options;
 	}
 
@@ -103,7 +103,7 @@ Class CSSCompression_Format
 	}
 
 	/**
-	 * Returns medium readability, putting selectors and details on new lines
+	 * Returns medium readability, putting selectors and rule sets on new lines
 	 *
 	 * @param (array) selectors: Array of selectors
 	 * @param (array) details: Array of declarations
@@ -125,7 +125,7 @@ Class CSSCompression_Format
 	}
 
 	/**
-	 * Returns minimum readability, breaking after every selector and it's details
+	 * Returns minimum readability, breaking after every selector and it's rule set
 	 *
 	 * @param (array) selectors: Array of selectors
 	 * @param (array) details: Array of declarations

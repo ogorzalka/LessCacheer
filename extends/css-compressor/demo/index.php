@@ -18,7 +18,7 @@ $select .= "<option value='custom'>Custom</option>";
 	<title>CSS Compressor [VERSION]</title>
 	<link rel='stylesheet' type='text/css' href='styles.css' />
 	<script type='text/javascript' src='jquery-1.4.2.js'></script>
-	<script type='text/javascript'>var CSSCompressionModes = <?php echo json_encode( $modes ); ?></script>
+	<script type='text/javascript'>var CSSCompressionModes = <?php echo json_encode( $modes ); ?>;</script>
 	<script type='text/javascript' src='js.js'></script>
 </head>
 <body>
@@ -36,7 +36,7 @@ $select .= "<option value='custom'>Custom</option>";
 	</td>
 	<td width='50%'>
 		<div class='control'>
-			<button class='compress'>Compress</button>
+			<button class='compress' type='submit'>Compress</button>
 			Mode:
 			<select name='mode'><?php echo $select; ?></select>
 			Readability:
@@ -69,11 +69,16 @@ $select .= "<option value='custom'>Custom</option>";
 				<span class='example'>#44ff11 -&gt; #4f1</span>
 			</label>
 			<label>
+				<input type='checkbox' name='color-hex2safe' checked='checked' />
+				Converts hex codes to safe CSS Level 1 color names
+				<span class='example'>#F00 -&gt; red</span>
+			</label>
+			<label>
 				<input type='checkbox' name='fontweight2num' checked='checked' />
 				Convert font-weight names to numbers
 				<span class='example'>bold -&gt; 700</span>
 			</label>
-			<label class='odd'>
+			<label>
 				<input type='checkbox' name='format-units' checked='checked' />
 				Remove zero decimals and 0 units
 				<span class='example'>15.0px -&gt; 15px || 0px -&gt; 0</span>
@@ -82,6 +87,16 @@ $select .= "<option value='custom'>Custom</option>";
 				<input type='checkbox' name='lowercase-selectors' checked='checked' />
 				Lowercase html tags from list
 				<span class='example'>BODY -&gt; body</span>
+			</label>
+			<label>
+				<input type='checkbox' name='attr2selector' checked='checked' />
+				Converts id and class attribute selectors, to their short selector counterpart
+				<span class='example'>div[id=blah][class=moreblah] -&gt; div#blah.moreblah</span>
+			</label>
+			<label>
+				<input type='checkbox' name='strict-id' checked='checked' />
+				Promotes nested id's to the front of the selector
+				<span class='example'>body &gt; div#elem p -&gt; $elem p</span>
 			</label>
 			<label>
 				<input type='checkbox' name='pseudo-space' checked='checked' />
@@ -164,6 +179,11 @@ $select .= "<option value='custom'>Custom</option>";
 				<input type='checkbox' name='rm-multi-define' checked='checked' />
 				Removes multiple declarations within the same rule set
 				<span class='example'>color:black;font-size:12pt;color:red; -&gt; color:red;font-size:12pt;</span>
+			</label>
+			<label>
+				<input type='checkbox' name='add-unknown' checked='checked' />
+				Add all unknown blocks to the top of the output in a comment strip.
+				Purely for bug reporting, but also useful to know what isn't being handled
 			</label>
 		</div>
 	</td>

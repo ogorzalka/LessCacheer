@@ -20,15 +20,15 @@ require( dirname( __FILE__ ) . '/src/Focus.php' );
  * @param (mixed) expect: Expected result
  */
 new FocusedTest(array(
-	'class' => 'Combine.Border',
-	'method' => 'replace',
+	'class' => 'Combine.BorderRadius',
+	'method' => 'combine',
 	'mode' => 'small',
 	'options' => array(
 	),
 	'params' => array(
-		"border-top:1px solid red;color:blue;border-left:1px solid red;border-right:1px solid red;border-bottom:1px solid red;",
+		"border-radius:10px 10px 10px 10px",
 	),
-	'expect' => "border:1px solid red;",
+	'expect' => "border-radius:10px;",
 ));
 
 ?>

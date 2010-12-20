@@ -2,5 +2,5 @@
 	path = lessphp
 	url = git@github.com:clearideaz/lessphp.git
 [submodule "css-compressor"]
-	path = css-compressor
+	path = extends/css-compressor
 	url = git@github.com:clearideaz/css-compressor.git

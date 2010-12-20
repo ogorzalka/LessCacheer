@@ -96,6 +96,9 @@ Class CSScompression_Test
 		// Test express compression
 		$this->express();
 
+		// Test singleton access
+		$this->singleton();
+
 		// Full sheet tests (security checks)
 		$this->reset();
 		$this->testSheets();
@@ -135,6 +138,8 @@ Class CSScompression_Test
 		// Stash copies of each of the common modes
 		foreach ( $this->modes as $mode => $options ) {
 			$this->instances[ $mode ] = new CSSCompression( $mode );
+			$singleton = CSSCompression::getInstance( $mode );
+			$singleton->mode( $mode );
 		}
 	}
 
@@ -157,6 +162,8 @@ Class CSScompression_Test
 	 * @params none
 	 */
 	private function focus(){
+		// Setup compression vars
+		$this->compressor->flush();
 		foreach ( $this->sandbox as $class => $obj ) {
 			foreach ( $obj as $method => $tests ) {
 				// Check for special test handler
@@ -177,7 +184,7 @@ Class CSScompression_Test
 					if ( isset( $row['token'] ) ) {
 						foreach ( $row['params'] as &$item ) {
 							if ( is_string( $item ) ) {
-								$item = preg_replace( $this->rtoken, $this->compressor->token, $item );
+								$item = preg_replace( $this->rtoken, CSSCompression::TOKEN, $item );
 							}
 						}
 					}
@@ -197,7 +204,7 @@ Class CSScompression_Test
 
 					// Token interchange
 					if ( isset( $row['token'] ) && is_string( $row['expect'] ) ) {
-						$row['expect'] = preg_replace( $this->rtoken, $this->compressor->token, $row['expect'] );
+						$row['expect'] = preg_replace( $this->rtoken, CSSCompression::TOKEN, $row['expect'] );
 					}
 
 					// Mark the result
@@ -327,6 +334,31 @@ Class CSScompression_Test
 	}
 
 	/**
+	 * Make sure express is working correctly
+	 *
+	 * @params none
+	 */
+	private function express(){
+		$content = file_get_contents( $this->original . 'pit.css' );
+		foreach ( $this->instances as $mode => $instance ) {
+			$this->mark( "CSSCompression.express", $mode, CSSCompression::express( $content, $mode ) === $instance->compress( $content ) );
+		}
+	}
+
+	/**
+	 * Singleton testing
+	 *
+	 * @params none
+	 */
+	private function singleton(){
+		$content = file_get_contents( $this->original . 'pit.css' );
+		foreach ( $this->instances as $mode => $instance ) {
+			$singleton = CSSCompression::getInstance( $mode );
+			$this->mark( "CSSCompression.getInstance", $mode, $singleton->compress( $content ) === $instance->compress( $content ) );
+		}
+	}
+
+	/**
 	 * Run all test sheets through full compressor to see outcome
 	 *
 	 * @params none
@@ -365,7 +397,7 @@ Class CSScompression_Test
 				// Stash errors for diff tooling
 				if ( $result !== $expected ) {
 					file_put_contents( $this->root . "errors/$file-result.css", $result );
-					$this->errorstack .= "diff " . $this->expected . $file . $this->root . "errors/$file-result.css\n";
+					$this->errorstack .= "diff " . $this->expected . $file . ' ' . $this->root . "errors/$file-result.css\n";
 				}
 			}
 		}
@@ -420,18 +452,6 @@ Class CSScompression_Test
 					}
 				}
 			}
-		}
-	}
-
-	/**
-	 * Make sure express is working correctly
-	 *
-	 * @params none
-	 */
-	private function express(){
-		$content = file_get_contents( $this->original . 'pit.css' );
-		foreach ( $this->instances as $mode => $instance ) {
-			$this->mark( "CSSCompression.express", $mode, CSSCompression::express( $content, $mode ) === $instance->compress( $content ) );
 		}
 	}
 
