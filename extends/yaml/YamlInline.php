@@ -8,7 +8,7 @@
  * file that was distributed with this source code.
  */
 
-require_once dirname(__FILE__).'/Yaml.inc';
+require_once dirname(__FILE__).'/Yaml.php';
 
 /**
  * YamlInline implements a YAML parser/dumper for the YAML inline syntax.
