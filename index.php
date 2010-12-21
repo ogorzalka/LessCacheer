@@ -20,7 +20,7 @@ Class LessCacheer
     public static $debug_info = null;
     public static $headers;
     public static $conf = array('mixins_path' => 'mixins', 'cache_path' => 'cache', 'debug_info' => true, // display original line and less files within Fireless addons for Firefox
-        'in_production' => true, 'cachetime' => 1314000, 'use_compression' => false, 'less_options' => array('importDir' => array()), 'compression_options' => array(
+        'in_production' => true, 'cachetime' => 1314000, 'use_compression' => false, 'less_options' => array('use_fireless' => false, 'importDir' => array()), 'compression_options' => array(
     // Converts long color names to short hex names
     // (aliceblue -> #f0f8ff)
         'color-long2hex' => true, 
@@ -80,7 +80,24 @@ Class LessCacheer
         'unnecessary-semicolons' => true, 
     // Readibility of Compressed Output, Defaults to none
         'readability' => 3));
-    
+
+
+	/**
+	 * Allows modules to hook into the processing at any point
+	 *
+	 * @param $method The method to check for in each of the modules
+	 * @return boolean
+	 */
+	private static function hook($method)
+	{
+		foreach(self::$modules as $module_name => $module)
+		{
+			if(method_exists($module,$method))
+			{				
+				call_user_func(array($module_name,$method));
+			}
+		}
+	}    
     
     /*
     Merge user-defined option with default configuration
@@ -202,6 +219,7 @@ Class LessCacheer
     {
         self::$less             = new lessc(); // instantiate Less
         self::$less->importDir  = self::$conf['less_options']['importDir']; // define import Directories
+        self::$less->debug_info = self::$conf['less_options']['use_fireless']; // use fireless or not
         
         self::$output = self::$less->parse(self::$input); // parse the less file
         
@@ -281,22 +299,24 @@ Class LessCacheer
     function __construct($f)
     {
         self::$f = $f;
-        require('config.inc.php');
         require 'lessphp/lessc.inc.php';
         
         // auto include extends
         $extends = self::rglob('extends/*.inc');
+        
         foreach ($extends as $extend) {
             require $extend;
         }
-        
+        $yaml = new Yaml();
+        $conf = $yaml->load('config.yml');
+
         try {
             self::$conf    = self::merge_options(self::$conf, $conf); // make conf usable by all methods
             
             // dev mode
             self::$conf['use_compression'] = (self::$conf['in_production']) === true ? self::$conf['use_compression'] : false;
             self::$conf['debug_info']      = (self::$conf['in_production']) === true ? false : self::$conf['debug_info'];
-            
+
             self::generate_paths(); // generate path config
             if (file::need_to_recache()) {
             	LessCacheer::$conf['less_options']['importDir'][] = dirname(self::$f).'/';

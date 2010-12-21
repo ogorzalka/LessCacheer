@@ -1,0 +1,31 @@
+cache_mixins: true
+cache_path: "cache"
+mixins_path: "mixins"
+in_production: false
+cachetime: 3600
+debug_info: true
+use_compression: true
+compression_options:
+    color-long2hex: true
+    color-rgb2hex: true
+    color-hex2shortcolor: false
+    color-hex2shorthex: true
+    fontweight2num: true
+    format-units: true
+    lowercase-selectors: true
+    pseudo-space: false
+    directional-compress: true
+    multiple-selectors: true
+    multiple-details: true
+    csw-combine: true
+    auralcp-combine: true
+    mp-combine: true
+    border-combine: true
+    font-combine: true
+    background-combine: true
+    list-combine: true
+    unnecessary-semicolons: true
+    readability: 3
+less_options:
+    importDir: []
+    use_fireless: true
