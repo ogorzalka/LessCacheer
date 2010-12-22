@@ -11,10 +11,10 @@ Class parse
         
         LessCacheer::$output = LessCacheer::$extends->lessc->parse(LessCacheer::$input); // parse the less file
         
-        //if (LessCacheer::$conf['use_compression']) {
+        if (LessCacheer::$conf['use_compression']) {
             $CSSC                = new CSSCompression(LessCacheer::$output, LessCacheer::$conf['compression_options']);
             LessCacheer::$output = $CSSC->css;
-        //}
+        }
         
         if (LessCacheer::$conf['debug_info']) {
             LessCacheer::$extends->helpers->log("   Parsed files :\n");
