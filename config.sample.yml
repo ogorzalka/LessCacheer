@@ -1,7 +1,6 @@
-cache_mixins: true
+in_production: false
 cache_path: "cache"
 mixins_path: "mixins"
-in_production: false
 cachetime: 3600
 debug_info: true
 use_compression: true

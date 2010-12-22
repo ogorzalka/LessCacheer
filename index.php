@@ -18,23 +18,24 @@ Class LessCacheer
     public static $debug_info = null;
     public static $headers;
     public static $conf = array();
-
-	/**
-	 * Allows modules to hook into the processing at any point
-	 *
-	 * @param $method The method to check for in each of the modules
-	 * @return boolean
-	 */
-	private static function hook($method)
-	{
-		foreach(self::$modules as $module_name => $module)
-		{
-			if(method_exists($module,$method))
-			{				
-				call_user_func(array($module_name,$method));
-			}
-		}
-	}
+    
+    /**
+     * Allows modules to hook into the processing at any point
+     *
+     * @param $method The method to check for in each of the modules
+     * @return boolean
+     */
+    private static function hook($method)
+    {
+        foreach (self::$modules as $module_name => $module) {
+            if (method_exists($module, $method)) {
+                call_user_func(array(
+                    $module_name,
+                    $method
+                ));
+            }
+        }
+    }
     
     /**
      * Include paths
@@ -69,9 +70,9 @@ Class LessCacheer
             # include any php files which sit in the specified folder
             foreach (self::rglob($pattern) as $include) {
                 include_once $include;
-                $filename  = basename($include);
-                $dirname   = dirname($include);
-                $classname = basename(str_replace('.inc.php', '', $include));
+                $filename                  = basename($include);
+                $dirname                   = dirname($include);
+                $classname                 = basename(str_replace('.inc.php', '', $include));
                 self::$modules[$classname] = $classname;
                 
                 if (class_exists($classname)) {
@@ -79,7 +80,7 @@ Class LessCacheer
                         self::$extends->$classname = new $classname(self::$config[$classname]);
                     } else {
                         self::$extends->$classname = new $classname();
-                    }  
+                    }
                 }
             }
         }
@@ -91,37 +92,37 @@ Class LessCacheer
         
         // auto include extends
         $extends = self::rload_class('extends/*.inc.php');
-
+        
         try {
             /**
-    		 * Init event
-    		 */
-    		self::hook('init');
-    
-    		/**
-    		 * Import every less files
-    		 */
-    		self::hook('import_process');
-    
-    		/**
-    		 * Parse event
-    		 */
-    		self::hook('parse_process');
-    
-    		/**
-    		 * Caching process
-    		 */
-    		self::hook('caching_process');
-    		
-    		/**
-    		 * Functions adter loading any content
-    		 */
-    		self::hook('rendering_process');
+             * Init event
+             */
+            self::hook('init');
+            
+            /**
+             * Import every less files
+             */
+            self::hook('import_process');
+            
+            /**
+             * Parse event
+             */
+            self::hook('parse_process');
+            
+            /**
+             * Caching process
+             */
+            self::hook('caching_process');
+            
+            /**
+             * Functions during rendering process
+             */
+            self::hook('rendering_process');
         }
         /**
          * If any errors were encountered
          */
-         
+        
         catch (Exception $e) {
             LessCacheer::$extends->headers->set('_status', 500);
             /** 

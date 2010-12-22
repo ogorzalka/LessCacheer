@@ -1,5 +1,5 @@
 <?php
-Class file extends LessCacheer
+Class file
 {
     /**
      * Returns the last modified date of a cache file
@@ -29,7 +29,7 @@ Class file extends LessCacheer
     
     public static function need_to_recache()
     {
-        return (!LessCacheer::$conf['in_production'] || (!file_exists(LessCacheer::$conf['cached_f']) || self::modified(LessCacheer::$f) > self::modified(LessCacheer::$conf['cached_f'])) && LessCacheer::$conf['in_production']);
+        return (LessCacheer::$conf['in_production'] === false || (!file_exists(LessCacheer::$conf['cached_f']) || self::modified(LessCacheer::$f) > self::modified(LessCacheer::$conf['cached_f'])) && LessCacheer::$conf['in_production']);
     }
     
     public static function get_contents($path)
@@ -41,7 +41,6 @@ Class file extends LessCacheer
     public static function init()
     {
         // just add the folder of the current parsed css as import directory
-        
         if (self::need_to_recache()) {
             LessCacheer::$recache                             = true;
             LessCacheer::$conf['less_options']['importDir'][] = dirname(LessCacheer::$f) . '/';

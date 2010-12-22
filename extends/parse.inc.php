@@ -15,7 +15,7 @@ Class parse
         if (LessCacheer::$conf['use_compression']) {
             $CSSC                = new CSSCompression(LessCacheer::$output, LessCacheer::$conf['compression_options']);
             LessCacheer::$output = $CSSC->css;
-        }
+        } //LessCacheer::$conf['use_compression']
         
         if (LessCacheer::$conf['debug_info']) {
             LessCacheer::$extends->helpers->log("   Parsed files :\n");
@@ -23,23 +23,27 @@ Class parse
                 LessCacheer::$extends->helpers->log("   * {$key}");
                 if ($mixin = in_array(str_replace('\\', '/', $key), LessCacheer::$less_files['mixins'])) {
                     LessCacheer::$extends->helpers->log("     type : auto-imported mixin");
-                } else if ($f['parent'] != null) {
+                } //$mixin = in_array(str_replace('\\', '/', $key), LessCacheer::$less_files['mixins'])
+                else if ($f['parent'] != null) {
                     LessCacheer::$extends->helpers->log("     type : user-imported less file");
                     LessCacheer::$extends->helpers->log("     imported by : {$f['parent']}");
-                } else {
+                } //$f['parent'] != null
+                else {
                     LessCacheer::$extends->helpers->log("     type : main less file");
                 }
                 LessCacheer::$extends->helpers->log("     last modification : " . date(DATE_RFC822, $f['filemtime']));
                 LessCacheer::$extends->helpers->log("     next recache : " . date(DATE_RFC822, $f['filemtime'] + LessCacheer::$conf['cachetime']) . "\n");
-            }
+            } //LessCacheer::$extends->lessc->allParsedFiles() as $key => $f
             LessCacheer::$debug_info .= "-------------------------------------------------------------- */\n";
             LessCacheer::$output = LessCacheer::$debug_info . LessCacheer::$output;
-        }
+        } //LessCacheer::$conf['debug_info']
     }
     
     public static function parse_process()
     {
-        self::less_to_css();
+        if (LessCacheer::$recache === true) {
+            self::less_to_css();
+        } //LessCacheer::$recache === true
     }
     
     function __construct()

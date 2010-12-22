@@ -1,7 +1,6 @@
 <?php
-Class import {
-
-    
+Class import
+{
     /*
     Find need less files
     */
@@ -19,10 +18,15 @@ Class import {
             }
         }
     }
-
-    public static function import_process() {
-        self::collect_lessfiles();
+    
+    public static function import_process()
+    {
+        if (LessCacheer::$recache === true) {
+            self::collect_lessfiles();
+        }
     }
     
-    function __construct() {}
+    function __construct()
+    {
+    }
 }

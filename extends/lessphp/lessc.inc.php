@@ -46,7 +46,7 @@ class lessc {
 	/**
 	 * @link http://www.w3.org/TR/css3-values/
 	 */
-	static protected $units=array(
+	static protected $units = array(
 			'em', 'ex', 'px', 'gd', 'rem', 'vw', 'vh', 'vm', 'ch', // Relative length units
 			'in', 'cm', 'mm', 'pt', 'pc', // Absolute length units
 			'%', // Percentages
@@ -139,6 +139,7 @@ class lessc {
 			}
 		}
 		
+
 		// see if can accept animation pseudo classes
 		$top = end($this->env);
 		if (isset($top['__special']) && $top['__special'] == 'keyframes') {
@@ -267,7 +268,8 @@ class lessc {
 					// copy default value if there isn't one supplied
 					if ($value == null && isset($arg[1]))
 						$value = $arg[1];
-                    $argEnv[$vname] = array($value);
+
+					$argEnv[$vname] = array($value);
 				}
 			}
 
@@ -784,15 +786,15 @@ class lessc {
 		} else {
 			$tags = $parentTags;
 		}
-		
+
 		// insert default args -- does not exist for blocks already reduced
 		if (isset($block['__args'])) {
-            $this->push();
-            foreach ($block['__args'] as $arg) {
-                if (isset($arg[1])) $this->append($this->vPrefix.$arg[0], $arg[1]);
-            }
-        }
-            
+			$this->push();
+			foreach ($block['__args'] as $arg) {
+				if (isset($arg[1])) $this->append($this->vPrefix.$arg[0], $arg[1]);
+			}
+		}
+
 		ob_start();
 		if ($bindEnv) $this->push($block);
 		foreach ($block as $name => $value) {
@@ -808,7 +810,7 @@ class lessc {
 				foreach ($value['__tags'] as $tag) {
 					$visitedMixins[$tag] = true;
 				}
-				
+
 				$child = $this->compileBlock($value, is_null($tags) ? array('') : $tags);
 				if (is_null($tags)) echo $child;
 				else $children[] = $child;
@@ -839,9 +841,9 @@ class lessc {
 			}
 		}
 		if ($bindEnv) $this->pop();
-		
+
 		if (isset($block['__args'])) $this->pop();
-		
+
 		$list = ob_get_clean();
 
 		if ($tags == null) {
@@ -874,6 +876,7 @@ class lessc {
 		foreach ($value as $v)
 			$props[] = str_repeat('  ', $level).
 				$name.':'.$this->compileValue($v).';';
+
 		return implode("\n", $props);
 	}
 
@@ -967,7 +970,7 @@ class lessc {
 		$arg = $this->reduce($arg);
 		return floor($arg[1]);
 	}
-	
+
 	function lib_round($arg) {
 		$arg = $this->reduce($arg);
 		return round($arg[1]);
@@ -1006,7 +1009,7 @@ class lessc {
 		array_unshift($components, 'color');
 		return $this->fixColor($components);
 	}
-    
+
 	// reduce an entire block, removing any delayed types
 	// done before a mixin is mixed in
 	function reduceBlock($block) {
@@ -1037,7 +1040,7 @@ class lessc {
 		}
 		return $out;
 	}
-	    
+
 	// reduce a delayed type to its final value
 	// dereference variables and solve equations
 	function reduce($var, $defaultValue = array('number', 0)) {
@@ -1045,8 +1048,8 @@ class lessc {
 
 		while (in_array($var[0], self::$dtypes)) {
 			if ($var[0] == 'list') {
-			    foreach ($var[2] as &$value) $value = $this->reduce($value);
-			        break;
+				foreach ($var[2] as &$value) $value = $this->reduce($value);
+				break;
 			} elseif ($var[0] == 'expression') {
 				$var = $this->evaluate($var[1], $var[2], $var[3]);
 			} elseif ($var[0] == 'variable') {
@@ -1246,7 +1249,7 @@ class lessc {
 	function set($name, $value) {
 		$this->env[count($this->env) - 1][$name] = $value;
 	}
-	
+
 	// set some literal value at the end of the parse
 	function setLiteral($value) {
 		$top =& $this->env[count($this->env) - 1];
@@ -1257,7 +1260,7 @@ class lessc {
 	function append($name, $value) {
 		$this->env[count($this->env) - 1][$name][] = $value;
 	}
-    
+
 	// append a list of values to name
 	function appendAll($name, $values) {
 		$top =& $this->env[count($this->env) - 1];
@@ -1280,7 +1283,7 @@ class lessc {
 
 		return null;
 	}
-	
+
 	var $tester = 0;
 
 	// get the highest occurence value for a name,
@@ -1330,6 +1333,7 @@ class lessc {
 		return $env;
 	}
 
+	// merge $env into the environment on the top of the stack
 	// evaluates all the sub properties
 	function merge($env) {
 		// see if we have to rework __tags, mixing into some of bound blocks breaks them up
@@ -1357,7 +1361,7 @@ class lessc {
 				}
 			}
 		}
-		
+
 		$top =& $this->env[count($this->env) - 1];
 
 		foreach ($env as $name => $value) {
@@ -1378,13 +1382,13 @@ class lessc {
 	
 	function isProperty($name, $value, $isConcrete = true) {
 		return is_array($value) && array_key_exists(0, $value) &&
-		substr($name, 0,2) != '__' &&
+			substr($name, 0,2) != '__' &&
 			(!$isConcrete || $name{0} != $this->vPrefix);
 	}
 
 	function isBlock($name, $value, $isConcrete = true) {
 		return is_array($value) && !array_key_exists(0, $value) &&
-		    substr($name, 0, 2) != '__' &&
+			substr($name, 0, 2) != '__' &&
 			(!$isConcrete || $name{0} != $this->mPrefix);
 	}
 
@@ -1443,7 +1447,7 @@ class lessc {
 		else $this->count = $where;
 		return true;
 	}
-	
+
 	/**
 	 * Initialize state for a fresh parse
 	 */
@@ -1463,10 +1467,9 @@ class lessc {
 		$this->line[$this->currentParsedFile] = 1;
 		$this->level = 0;
 
-		
 		$this->buffer = $this->removeComments($buff);
 		$this->push(); // set up global scope
-			
+
 		// trim whitespace on head
 		if (preg_match('/^\s+/', $this->buffer, $m)) {
 			$this->line[$this->currentParsedFile]  += substr_count($m[0], "\n");
@@ -1675,3 +1678,4 @@ class lessc {
 
 	}
 }
+

@@ -1,5 +1,4 @@
 <?php
-
 Class conf
 {
     public static $default_conf = array('mixins_path' => 'mixins', 'debug_info' => true, // display original line and less files within Fireless addons for Firefox
