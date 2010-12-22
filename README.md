@@ -19,7 +19,7 @@ Requests to CSS files are made through LessCacheer:
 
 Copy LessCacheer into your project.
 
-Create a config.yml file inside the LessCacheer folder based on the config.sample.yml file.
+Create a `config.yml` file inside the LessCacheer folder based on the `config.sample.yml` file.
 
 That's all folk !
 
@@ -30,4 +30,4 @@ LessCacheer give you a new tool to work with Firebug : Fireless !
 FireLess is a Firebug extension that makes Firebug display the Less filenames and line numbers of LessPHP-generated CSS styles rather than those of the generated CSS. This is an adaptation of the [Firesass extension](https://github.com/nex3/firesass) developped by [Nex3](https://github.com/nex3/firesass).
 
 First, [install FireLess](https://addons.mozilla.org/fr/firefox/addon/259377/).
-Second, enable use_fireless inside the config.yml.
+Second, enable `use_fireless` inside the `config.yml`.
