@@ -15,9 +15,7 @@ LessCacheer is an open-source CSS Authoring Framework based. LessCacheer uses [L
 
 Requests to CSS files are made through LessCacheer:
 
-<code>
-  <link href="LessCacheer/index.php?f=/css/global.css" rel="stylesheet" />
-</code>
+``<link href="LessCacheer/index.php?f=/css/global.css" rel="stylesheet" />``
 
 Copy LessCacheer into your project.
 
