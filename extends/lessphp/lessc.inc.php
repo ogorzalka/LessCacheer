@@ -297,7 +297,6 @@ class lessc {
 		$updated_url = str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($url));
 		$replacement = sprintf('url(\'%s/${2}\')', $updated_url);
 		$string = preg_replace('/url\((\'|")?(.*?)(\'|")?\)/', $replacement, $string);
-		
 		return $string;
 	}
   

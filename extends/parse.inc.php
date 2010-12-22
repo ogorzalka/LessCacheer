@@ -9,13 +9,12 @@ Class parse
         LessCacheer::$extends->lessc->importDir  = LessCacheer::$conf['less_options']['importDir']; // define import Directories
         LessCacheer::$extends->lessc->debug_info = LessCacheer::$conf['less_options']['use_fireless']; // use fireless or not
         
-        
         LessCacheer::$output = LessCacheer::$extends->lessc->parse(LessCacheer::$input); // parse the less file
         
-        if (LessCacheer::$conf['use_compression']) {
+        //if (LessCacheer::$conf['use_compression']) {
             $CSSC                = new CSSCompression(LessCacheer::$output, LessCacheer::$conf['compression_options']);
             LessCacheer::$output = $CSSC->css;
-        } //LessCacheer::$conf['use_compression']
+        //}
         
         if (LessCacheer::$conf['debug_info']) {
             LessCacheer::$extends->helpers->log("   Parsed files :\n");
@@ -23,7 +22,7 @@ Class parse
                 LessCacheer::$extends->helpers->log("   * {$key}");
                 if ($mixin = in_array(str_replace('\\', '/', $key), LessCacheer::$less_files['mixins'])) {
                     LessCacheer::$extends->helpers->log("     type : auto-imported mixin");
-                } //$mixin = in_array(str_replace('\\', '/', $key), LessCacheer::$less_files['mixins'])
+                }
                 else if ($f['parent'] != null) {
                     LessCacheer::$extends->helpers->log("     type : user-imported less file");
                     LessCacheer::$extends->helpers->log("     imported by : {$f['parent']}");
@@ -33,17 +32,17 @@ Class parse
                 }
                 LessCacheer::$extends->helpers->log("     last modification : " . date(DATE_RFC822, $f['filemtime']));
                 LessCacheer::$extends->helpers->log("     next recache : " . date(DATE_RFC822, $f['filemtime'] + LessCacheer::$conf['cachetime']) . "\n");
-            } //LessCacheer::$extends->lessc->allParsedFiles() as $key => $f
+            }
             LessCacheer::$debug_info .= "-------------------------------------------------------------- */\n";
             LessCacheer::$output = LessCacheer::$debug_info . LessCacheer::$output;
-        } //LessCacheer::$conf['debug_info']
+        }
     }
     
     public static function parse_process()
     {
         if (LessCacheer::$recache === true) {
             self::less_to_css();
-        } //LessCacheer::$recache === true
+        }
     }
     
     function __construct()
