@@ -20,15 +20,7 @@
 /* `Grid >> Global
 ----------------------------------------------------------------------------------------------------*/
 
-@grid(@n:0; @m:0) {
-	float: left;
-	display: inline;
-	margin-left: @gutter_width;
-	margin-right: @gutter_width;
-	width: ( ( @n - 1 ) * @gutter_width * 2 + (@n * @column_width))- @m;
-}
-
-@gridbox(@n:0; @p:5; @m:0) {
+@grid(@n:0; @p:0; @m:0) {
 	float: left;
 	display: inline;
 	margin-left: @gutter_width;
