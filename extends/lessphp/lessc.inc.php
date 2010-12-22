@@ -227,7 +227,7 @@ class lessc {
 					$this->levelImport++; // enters a new level
 					$this->addParsedFile($file, $this->count);
 					$loaded = $this->removeComments(file_get_contents($file).";");
-					$loaded = $this->updateUrls($loaded, $url);
+					$loaded = $this->updateUrls($loaded, $file);
 					$this->line[$this->currentParsedFile] = 1;  // current line of the parsed less file
 					
 					// trim whitespace on head
@@ -294,9 +294,8 @@ class lessc {
 	function updateUrls($string, $url)
 	{
 		if(!$this->updateUrls) return $string;
-		
-		$replacement = sprintf('url(\'%s/${2}\')', dirname($url));
-		
+		$updated_url = str_replace($_SERVER['DOCUMENT_ROOT'], '', dirname($url));
+		$replacement = sprintf('url(\'%s/${2}\')', $updated_url);
 		$string = preg_replace('/url\((\'|")?(.*?)(\'|")?\)/', $replacement, $string);
 		
 		return $string;

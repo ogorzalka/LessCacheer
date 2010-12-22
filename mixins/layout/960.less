@@ -20,25 +20,24 @@
 /* `Grid >> Global
 ----------------------------------------------------------------------------------------------------*/
 
+// @n => grid size
+// @p => box padding
+// @m => extra margins
 @grid(@n:0; @p:0; @m:0) {
 	float: left;
 	display: inline;
 	margin-left: @gutter_width;
 	margin-right: @gutter_width;
 	padding:@p;
-	width: ( ( @n - 1 ) * @gutter_width * 2 + (@n * @column_width)) - (2 * @p);
+	width: ( ( @n - 1 ) * @gutter_width * 2 + (@n * @column_width)) - (2 * @p) - @m;
 }
 
 /* `Grid >> Children (Alpha ~ First, Omega ~ Last)
 ----------------------------------------------------------------------------------------------------*/
 
-@first {
-	margin-left: 0;
-}
+@first { margin-left: 0; }
 
-@last {
-	margin-right: 0;
-}
+@last { margin-right: 0; }
 
 
 /* Add these to a column to append empty cols. */
