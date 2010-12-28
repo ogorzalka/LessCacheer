@@ -69,17 +69,19 @@ Class LessCacheer
         foreach ((array) $patterns as $pattern) {
             # include any php files which sit in the specified folder
             foreach (self::rglob($pattern) as $include) {
-                include_once $include;
-                $filename                  = basename($include);
-                $dirname                   = dirname($include);
-                $classname                 = basename(str_replace('.inc.php', '', $include));
-                self::$modules[$classname] = $classname;
-                
-                if (class_exists($classname)) {
-                    if (!empty(self::$conf[$classname])) {
-                        self::$extends->$classname = new $classname(self::$config[$classname]);
-                    } else {
-                        self::$extends->$classname = new $classname();
+                if (!strpos($include, '/lessify.inc.php')) {
+                    include_once $include;
+                    $filename                  = basename($include);
+                    $dirname                   = dirname($include);
+                    $classname                 = basename(str_replace('.inc.php', '', $include));
+                    self::$modules[$classname] = $classname;
+                    
+                    if (class_exists($classname)) {
+                        if (!empty(self::$conf[$classname])) {
+                            self::$extends->$classname = new $classname(self::$config[$classname]);
+                        } else {
+                            self::$extends->$classname = new $classname();
+                        }
                     }
                 }
             }
