@@ -110,6 +110,11 @@ Class LessCacheer
              * Parse event
              */
             self::hook('parse_process');
+
+            /**
+             * Caching process
+             */
+            self::hook('after_parse_process');
             
             /**
              * Caching process

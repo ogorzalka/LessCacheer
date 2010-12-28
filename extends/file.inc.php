@@ -44,7 +44,7 @@ Class file
         if (self::need_to_recache()) {
             LessCacheer::$recache                             = true;
             LessCacheer::$conf['less_options']['importDir'][] = dirname(LessCacheer::$f) . '/';
-            LessCacheer::$extends->helpers->log("   Just recached !\n");
+            debug::log("   Just recached !\n");
         }
     }
     

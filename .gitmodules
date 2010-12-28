@@ -4,3 +4,6 @@
 [submodule "extends/lessphp"]
 	path = extends/lessphp
 	url = git://github.com/clearideaz/lessphp.git
+[submodule "mixins/css3/img/rgba"]
+	path = mixins/css3/img/rgba
+	url = git://github.com/clearideaz/rgba.php.git
