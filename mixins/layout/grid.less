@@ -1,5 +1,6 @@
 /*
-	960 Grid System ~ Core CSS.
+    Grid.less
+	Based on 960 Grid System ~ Core CSS.
 	Learn more ~ http://960.gs/
 	Adapted by Olivier Gorzalka for brightCSS
 
@@ -10,6 +11,12 @@
 ----------------------------------------------------------------------------------------------------*/
 
 @column_width = (@page_width / @column_count - @gutter_width * 2);
+
+@debug-grid {
+    body {
+        background:transparent url(img/index.php?cw={@column_width}&cc={@column_count}&gw={@gutter_width}) repeat-y top center !important;
+    }
+}
 
 @container {
 	margin-left: auto;
