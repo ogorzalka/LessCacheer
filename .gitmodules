@@ -1,6 +1,6 @@
-[submodule "extends/lessphp"]
-	path = lessphp
-	url = git@github.com:clearideaz/lessphp.git
 [submodule "extends/css-compressor"]
 	path = extends/css-compressor
-	url = git@github.com:clearideaz/css-compressor.git
+	url = git://github.com/clearideaz/css-compressor.git
+[submodule "extends/lessphp"]
+	path = extends/lessphp
+	url = git://github.com/clearideaz/lessphp.git
