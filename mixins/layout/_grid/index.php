@@ -22,7 +22,7 @@ class bgGrid
      * @param $gw Gutter Width
      * @return null
      */
-    private static function create_grid_image($cc = 1, $cw, $gw)
+    private static function create_grid_image($cc = 1, $cw = 0, $gw = 0)
     {
         $cc = (int) $cc;
         $cw = (int) $cw;
@@ -30,10 +30,9 @@ class bgGrid
         $gw = (int) $gw;
         
         self::$cache_target = self::find_cache_folder() . "{$cc}col_{$cw}px_{$gw}px_grid.png";
-        ;
         
         if (!file_exists(self::$cache_target)) {
-            $image = ImageCreate(($cw + 2 * $gw) * 6 + $gw, $bl);
+            $image = ImageCreate(($cw + 2 * $gw) * $cc + $gw, $bl);
             
             $colorColumn = ImageColorAllocate($image, 240, 240, 240);
             $colorGutter = ImageColorAllocate($image, 255, 255, 255);
@@ -60,6 +59,9 @@ class bgGrid
     
     function __construct($params)
     {
+        $default_params = array('cc' => 0, 'cw' => 1, 'gw' => 1);
+        $params = array_merge($default_params, $params);
+        
         self::create_grid_image($params['cc'], $params['cw'], $params['gw']);
         header('Content-Type: image/png');
         echo file_get_contents(self::$cache_target);
