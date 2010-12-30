@@ -26,17 +26,16 @@ class bgGrid
     {
         $cc = (int) $cc;
         $cw = (int) $cw;
-        $bl = 20;
+        $bl = 1;
         $gw = (int) $gw;
         
         self::$cache_target = self::find_cache_folder() . "{$cc}col_{$cw}px_{$gw}px_grid.png";
         
-        if (file_exists(self::$cache_target)) {
+        if (!file_exists(self::$cache_target)) {
             $image = ImageCreate(($cw + 2 * $gw) * $cc, $bl);
             
             $colorGutter = ImageColorAllocate($image, 245, 245, 245);
             $colorColumn = ImageColorAllocate($image, 235, 235, 235);
-
 
             $posx = 0;
             
