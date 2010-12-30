@@ -26,29 +26,37 @@ class bgGrid
     {
         $cc = (int) $cc;
         $cw = (int) $cw;
-        $bl = 1;
+        $bl = 20;
         $gw = (int) $gw;
         
         self::$cache_target = self::find_cache_folder() . "{$cc}col_{$cw}px_{$gw}px_grid.png";
         
-        if (!file_exists(self::$cache_target)) {
-            $image = ImageCreate(($cw + 2 * $gw) * $cc + $gw, $bl);
+        if (file_exists(self::$cache_target)) {
+            $image = ImageCreate(($cw + 2 * $gw) * $cc, $bl);
             
-            $colorColumn = ImageColorAllocate($image, 240, 240, 240);
-            $colorGutter = ImageColorAllocate($image, 255, 255, 255);
-            
+            $colorGutter = ImageColorAllocate($image, 245, 245, 245);
+            $colorColumn = ImageColorAllocate($image, 235, 235, 235);
+
+
+            $posx = 0;
             
             for ($i = 0; $i <= $cc; $i++) {
-                $posleft = ($i == 0) ? 0 : ((2 * $gw + $cw + 1) * $i);
-                
-                # Draw left gutter
-                Imagefilledrectangle($image, 0 + $posleft, 0, ($gw - 1) + $posleft, $bl, $colorGutter);
+                $x1 = $posx;
+                $x2 = $posx + $gw - 1;
+                Imagefilledrectangle($image, $x1, 0, $x2, $bl, $colorGutter);
+                $posx += $gw;
                 
                 # Draw column
-                Imagefilledrectangle($image, $gw + $posleft, 0, ($cw + $gw - 1) + $posleft, $bl, $colorColumn);
+                $x1 = $posx;
+                $x2 = $posx + $cw - 1;
+                Imagefilledrectangle($image, $x1, 0, $x2, $bl, $colorColumn);
+                $posx += $cw;
                 
                 # Draw right gutter
-                Imagefilledrectangle($image, ($gw + $cw + 1) + $posleft, 0, ($cw + 2 * $gw) + $posleft, $bl, $colorGutter);
+                $x1 = $posx;
+                $x2 = $posx + $gw - 1;
+                Imagefilledrectangle($image, $x1, 0, $x2, $bl, $colorGutter);          
+                $posx += $gw;
             }
             
             ImagePNG($image, self::$cache_target);

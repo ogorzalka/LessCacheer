@@ -62,15 +62,22 @@ Class conf
         'unnecessary-semicolons' => true, 
     // Readibility of Compressed Output, Defaults to none
         'readability' => 3));
-    
+
+    public static function GetRelativePath($path)
+    {
+        $npath = str_replace('\\', '/', $path);
+        return str_replace($_SERVER['DOCUMENT_ROOT'], '', $npath);
+    }
     /*
     generated every useful paths
     */
     public static function generate_paths()
     {
-        LessCacheer::$conf['base_path']      = LessCacheer::$extends->helpers->clean_path(dirname(__FILE__)) . '/../';
+        LessCacheer::$conf['base_path']      = LessCacheer::$extends->helpers->clean_path(dirname(__FILE__). '/../');
         LessCacheer::$conf['mixins_path']    = LessCacheer::$conf['base_path'] . LessCacheer::$conf['mixins_path'];
-        LessCacheer::$f                      = LessCacheer::$extends->helpers->clean_path($_SERVER['DOCUMENT_ROOT'] . LessCacheer::$f);
+
+        LessCacheer::$f                      = (LessCacheer::$f[0] == '/') ? LessCacheer::$extends->helpers->clean_path($_SERVER['DOCUMENT_ROOT'] . LessCacheer::$f) : LessCacheer::$f;
+        
         LessCacheer::$conf['filecache_path'] = 'cache/' . str_replace(array(
             $_SERVER['DOCUMENT_ROOT'],
             basename(LessCacheer::$f)
@@ -82,7 +89,7 @@ Class conf
     
     public static function init()
     {
-        LessCacheer::$conf                    = LessCacheer::$extends->yml->load('config.yml');
+        LessCacheer::$conf = array_merge(self::$default_conf, LessCacheer::$extends->yml->load('config.yml'));
         LessCacheer::$conf['use_compression'] = (LessCacheer::$conf['in_production']) === true ? LessCacheer::$conf['use_compression'] : false;
         LessCacheer::$conf['debug_info']      = (LessCacheer::$conf['in_production']) === true ? false : LessCacheer::$conf['debug_info'];
         self::generate_paths();
