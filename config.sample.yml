@@ -1,12 +1,11 @@
 in_production: false
-cache_path: "cache"
 mixins_path: "mixins"
 cachetime: 3600
 debug_info: true
-use_compression: true
 less_options:
     importDir: []
-    use_fireless: true
+    use_fireless: false
+use_compression: true
 compression_options:
     color-long2hex: true
     color-rgb2hex: true
@@ -28,3 +27,5 @@ compression_options:
     list-combine: true
     unnecessary-semicolons: true
     readability: 3
+use_crossbrowser_rgba: true
+vendor_properties: true
