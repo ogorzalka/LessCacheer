@@ -10,7 +10,7 @@ LessCacheer is an open-source CSS Authoring Framework based. LessCacheer uses [L
 3. Minify CSS with the [CSS Compressor](http://www.codenothing.com/css-compressor/) developed by [Codenothing](http://www.codenothing.com)
 4. YAML based configuration
 5. Cache the generated CSS files with the correct caching headers (ETags, expires header)
-6. Use your own PHP function inside your less file !
+6. Use your own PHP functions inside your less file !
 7. Color converter so that you can use hsl & cmyk colours !
 
 ### How to use in your php project
