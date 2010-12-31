@@ -1,5 +1,5 @@
 <?php
-Class helpers
+class helpers
 {
     public static function clean_path($p)
     {

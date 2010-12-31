@@ -1,9 +1,9 @@
-[submodule "extends/css-compressor"]
-	path = extends/css-compressor
+[submodule "extensions/css-compressor"]
+	path = extensions/css-compressor
 	url = git://github.com/clearideaz/css-compressor.git
-[submodule "extends/lessphp"]
-	path = extends/lessphp
+[submodule "lib/parsers/lessphp"]
+	path = lib/parsers/lessphp
 	url = git://github.com/clearideaz/lessphp.git
-[submodule "mixins/css3/img/rgba"]
-	path = mixins/css3/img/rgba
+[submodule "mixins/css3/_rgba/rgba"]
+	path = mixins/css3/_rgba/rgba
 	url = git://github.com/clearideaz/rgba.php.git

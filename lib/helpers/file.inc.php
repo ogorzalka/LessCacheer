@@ -1,5 +1,5 @@
 <?php
-Class file
+class file
 {
     /**
      * Returns the last modified date of a cache file
@@ -44,7 +44,6 @@ Class file
         if (self::need_to_recache()) {
             LessCacheer::$recache                             = true;
             LessCacheer::$conf['less_options']['importDir'][] = dirname(LessCacheer::$f) . '/';
-            debug::log("   Just recached !\n");
         }
     }
     

@@ -18,25 +18,19 @@ Class LessCacheer
     public static $debug_info = null;
     public static $headers;
     public static $conf = array();
-    
-    /**
-     * Allows modules to hook into the processing at any point
-     *
-     * @param $method The method to check for in each of the modules
-     * @return boolean
-     */
-    private static function hook($method)
-    {
-        foreach (self::$modules as $module_name => $module) {
-            if (method_exists($module, $method)) {
-                call_user_func(array(
-                    $module_name,
-                    $method
-                ));
-            }
-        }
-    }
-    
+    public static $hook_event = array(
+            'hook_init', // Init of hooks events
+            'preconfig', // Preconfig event
+            'init', // init of LessCacheer
+            'import_process', // Mixin import event
+            'preparse_process', // Before parsing
+            'parse_process', // During parsing
+            'after_parse_process', // After parsing
+            'caching_process', // Caching event
+            'rendering_process', // Rendering event
+    );
+    public static $init_time;
+	
     /**
      * Include paths
      *
@@ -60,6 +54,7 @@ Class LessCacheer
             foreach ($paths as $p)
                 $files = array_merge($files, self::rglob($pattern, $flags, $p . '/'));
         }
+        sort($files);
         return is_array($files) ? $files : array();
     }
     
@@ -88,48 +83,28 @@ Class LessCacheer
         }
     }
     
+    public static function time_generated() {
+        $time = explode(" ", microtime());
+        return $time[1] + $time[0];
+    }
+    
     function __construct($f)
     {
+        // init of generation time
+        self::$init_time = self::time_generated();
+        
         self::$f = $f;
         
         // auto include extends
-        $extends = self::rload_class('extends/*.inc.php');
+        $extends = self::rload_class(array('lib/*.inc.php', 'extensions/*.inc.php'));
         
         try {
-            /**
-             * Init event
-             */
-            self::hook('init');
-            
-            /**
-             * Import every less files
-             */
-            self::hook('import_process');
-            
-            /**
-             * Parse event
-             */
-            self::hook('parse_process');
-
-            /**
-             * Caching process
-             */
-            self::hook('after_parse_process');
-            
-            /**
-             * Caching process
-             */
-            self::hook('caching_process');
-            
-            /**
-             * Functions during rendering process
-             */
-            self::hook('rendering_process');
+            foreach(self::$hook_event as $event) { hooks::add($event); }
         }
+        
         /**
          * If any errors were encountered
          */
-        
         catch (Exception $e) {
             LessCacheer::$extends->headers->set('_status', 500);
             /** 

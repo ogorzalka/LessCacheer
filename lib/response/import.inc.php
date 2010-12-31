@@ -1,5 +1,5 @@
 <?php
-Class import
+class import
 {
     /*
     Find need less files

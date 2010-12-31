@@ -31,7 +31,11 @@ class debug {
                 self::log("     last modification : " . date(DATE_RFC822, $f['filemtime']));
                 self::log("     next recache : " . date(DATE_RFC822, $f['filemtime'] + LessCacheer::$conf['cachetime']) . "\n");
             }
-            LessCacheer::$debug_info .= "-------------------------------------------------------------- */\n";
+            
+            // end of generation time
+            $end_time = LessCacheer::time_generated() - LessCacheer::$init_time;
+            self::log("     CSS generated in ".$end_time." seconds\n");
+            LessCacheer::$debug_info .= "-------------------------------------------------------------- */\n\n";
             LessCacheer::$output = LessCacheer::$debug_info . LessCacheer::$output;
         }
     }

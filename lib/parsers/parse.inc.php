@@ -1,5 +1,5 @@
 <?php
-Class parse
+class parse
 {
     /*
     let the magic ! less takes care of everything

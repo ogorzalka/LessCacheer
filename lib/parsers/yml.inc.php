@@ -1,5 +1,5 @@
 <?php
-Class yml
+class yml
 {
     public static $yaml;
     
