@@ -5,7 +5,6 @@ class css_functions {
 	 * @var array
 	 */
 	public static $functions = array();
-
 	
 	/**
 	 * Register a new function
@@ -26,7 +25,6 @@ class css_functions {
 	 * @access public
 	 * @param $name
 	 * @param $string
-	 * @param $type int Which array to return
 	 * @return array
 	 */
 	public static function find_functions($name,$string)
@@ -72,7 +70,6 @@ class css_functions {
 	
 	/**
 	 * @access public
-	 * @param $source
 	 * @return string
 	 */
 	public static function preparse_process()
@@ -98,7 +95,6 @@ class css_functions {
 	/**
 	 * Lets extensions register custom functions by creating a hook
 	 * @access public
-	 * @param $source LessCacheer_source
 	 * @return void
 	 */
 	public static function init()
@@ -106,8 +102,7 @@ class css_functions {
 		hooks::add('register_function');
 	}
 	
-	function __construct() {
-	    //print_r(self::find_functions());
+	function __construct() {s
 	}
 	
 }
