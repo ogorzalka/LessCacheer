@@ -74,7 +74,7 @@ class vendor_properties {
 	public static function preparse_process() {
 	    if (LessCacheer::$conf['vendor_properties'] === true) {
     	    foreach(self::$vendor_properties as $property=>$vendor_properties) {
-    	        if (preg_match_all('#^\s*'.$property.'\s*:\s*([^;\n]*)(;)?#m', LessCacheer::$input, $out)) {
+    	        if (preg_match_all('#^\s*?\t*?'.$property.'\s*:\s*([^;\n]*)(;)?#m', LessCacheer::$input, $out)) {
     	            list($property_lines, $property_value, $separator) = $out;
     	            $new_property_lines = array();
     	            foreach($property_lines as $key=>$property_line) {
