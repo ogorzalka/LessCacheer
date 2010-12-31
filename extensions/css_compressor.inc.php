@@ -18,6 +18,6 @@ class css_compressor
     
     function __construct()
     {
-        require('css-compressor/src/CSSCompression.inc');
+        require('css-compressor/src/CSSCompression.php');
     }
 }
