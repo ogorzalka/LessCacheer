@@ -25,7 +25,7 @@ class lessfile_config {
         // foreach each existing config file
         foreach(self::get_config_files() as $config_file) {
             $conf = LessCacheer::$extends->yml->load($config_file); // parse the yaml
-            foreach($conf as $key=>$value) {
+            foreach((array)$conf as $key=>$value) {
                 // if the key value is a reserved space : all, prod or dev
                 if (in_array($key, array('all', 'prod', 'dev'))) {
                     $ignore_mode = LessCacheer::$conf['in_production'] === false ? 'prod' : 'dev';
