@@ -102,7 +102,7 @@ class css_functions {
 		hooks::add('register_function');
 	}
 	
-	function __construct() {s
+	function __construct() {
 	}
 	
 }

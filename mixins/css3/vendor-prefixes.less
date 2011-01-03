@@ -1,0 +1,170 @@
+/**
+ * Easier way to use border-radius
+ */
+@border-radius(@radius)
+{
+	-webkit-border-radius:@radius;
+	-moz-border-radius:@radius;
+	border-radius:@radius;
+}
+
+@border-top-left-radius(@radius)
+{
+	-webkit-border-top-left-radius:@radius;
+	-moz-border-radius-topleft:@radius;
+	border-top-left-radius:@radius;
+}
+
+@border-top-right-radius(@radius)
+{
+	-webkit-border-top-right-radius:@radius;
+	-moz-border-radius-topright:@radius;
+	border-top-right-radius:@radius;
+}
+
+@border-bottom-left-radius(@radius)
+{
+	-webkit-border-bottom-left-radius:@radius;
+	-moz-border-radius-bottomleft:@radius;
+	border-bottom-left-radius:@radius;
+}
+
+@border-bottom-right-radius(@radius)
+{
+	-webkit-border-bottom-right-radius:@radius;
+	-moz-border-radius-bottomright:@radius;
+	border-bottom-right-radius:@radius;
+}
+
+@border-top-radius(@radius)
+{
+	@border-top-left-radius(@radius);
+	@border-top-right-radius(@radius);
+}
+
+@border-bottom-radius(@radius)
+{
+	@border-bottom-left-radius(@radius);
+	@border-bottom-right-radius(@radius);
+}
+
+@border-left-radius(@radius)
+{
+	@border-top-left-radius(@radius);
+	@border-bottom-left-radius(@radius);
+}
+
+@border-right-radius(@radius)
+{
+	@border-top-right-radius(@radius);
+	@border-bottom-right-radius(@radius);
+}
+
+/**
+ * Adds a drop shadow
+ */
+@box-shadow(@properties)
+{
+	-moz-box-shadow:@properties;
+	-webkit-box-shadow:@properties;
+	box-shadow:@properties;
+}
+
+/**
+ * Easier way to use box-shadow
+ */
+ 
+@box-sizing(@property)
+{
+	-webkit-border-sizing:@property;
+	-moz-border-sizing:@property;
+	border-sizing:@property;
+}
+
+/**
+ * Easier way to use css transform
+ */
+ 
+@transform(@property)
+{
+	-webkit-transform:@property;
+	-moz-transform:@property;
+	transform:@property;
+}
+
+@transform-origin(@property)
+{
+	-webkit-transform-origin:@property;
+	-moz-transform-origin:@property;
+	transform-origin:@property;
+}
+
+/**
+ * Easier way to use css transition
+ */
+
+@transition(@property)
+{
+	-webkit-transition:@property;
+	-moz-transition:@property;
+	transition:@property;
+}
+
+@transition-property(@property)
+{
+	-webkit-transition-property:@property;
+	-moz-transition-property:@property;
+	transition-property:@property;
+}
+
+@transition-duration(@property)
+{
+	-webkit-transition-duration:@property;
+	-moz-transition-duration:@property;
+	transition-duration:@property;
+}
+
+@transition-timing-function(@property)
+{
+	-webkit-transition-timing-function:@property;
+	-moz-transition-timing-function:@property;
+	transition-timing-function:@property;
+}
+
+@transition-delay(@property)
+{
+	-webkit-transition-delay:@property;
+	-moz-transition-delay:@property;
+	transition-delay:@property;
+}
+
+/**
+ * Specify the size of the background image in pixels or percentage.
+ * Firefox 3.6+ can also have values of cover or contain
+ * @see https://developer.mozilla.org/en/CSS/-moz-background-size
+ */
+@background-size(@property)
+{
+	-o-background-size:@property;
+	-webkit-background-size:@property;
+	-khtml-background-size:@property;
+	-moz-background-size:@property;
+	background-size:@property;
+}
+
+/**
+* Opacity
+* 
+* Thanks to Chris Eppstein. Borrowed this one from Compass. 
+* Takes a number from 0 to 1.
+
+*/
+
+@opacity(@opacity : 1) {
+	@ie_opacity : @opacity * 100;
+	opacity: @opacity;
+	-moz-opacity: @opacity;
+	-khtml-opacity: @opacity;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Alpha(Opacity={@ie_opacity})";
+	filter: "alpha(opacity={@ie_opacity})";
+}

@@ -1,7 +1,7 @@
 # LessCacheer v1.0.0
 #### <http://clearideaz.com>
 
-LessCacheer is an open-source CSS Authoring Framework based. LessCacheer uses [LessPHP](http://leafo.net/lessphp/).
+LessCacheer is an open-source CSS Authoring Framework. LessCacheer uses [LessPHP](http://leafo.net/lessphp/).
 
 ## Features
 
