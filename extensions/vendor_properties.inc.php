@@ -37,16 +37,14 @@ class vendor_properties {
 	
 	public static function preparse_process() {
 	    if (LessCacheer::$conf['vendor_properties'] === true) {
-    	    foreach(self::$vendor_properties as $property) {
-    	        if (preg_match_all('#^\s*?\t*?'.$property.'\s*:\s*([^;\n]*)(;)?#m', LessCacheer::$input, $out)) {
-    	            list($property_lines, $property_value, $separator) = $out;
-    	            $new_property_lines = array();
-    	            foreach($property_lines as $key=>$property_line) {
-    	                $new_property_lines[$key] = "@".$property.'('.trim($property_value[$key]).');';
-    	            }
-    	            LessCacheer::$input = str_replace($property_lines, $new_property_lines, LessCacheer::$input);
-    	        }
-    	    }
+	        if (preg_match_all('#^\s*?\t*?('.implode('|', self::$vendor_properties).')\s*:\s*([^;\n]*)(;)?#m', LessCacheer::$input, $out)) {
+	            list($property_lines, $property, $property_value) = $out;
+	            $updated_property_lines = array();
+	            foreach($property_lines as $key=>$property_line) {
+	                $updated_property_lines[$key] = "@".$property[$key].'('.trim($property_value[$key]).');';
+	            }
+	            LessCacheer::$input = str_replace($property_lines, $updated_property_lines, LessCacheer::$input);
+	        }
         }
 	}
 	
