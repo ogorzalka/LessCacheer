@@ -101,7 +101,7 @@ class conf
     }
     
     public static function preconfig() {
-        LessCacheer::$conf = array_merge(self::$default_conf, LessCacheer::$extends->yml->load('config.yml'));
+        LessCacheer::$conf = array_merge(self::$default_conf, LessCacheer::$extends->yaml->load('config.yml'));
     }
     
     public static function init()

@@ -1,16 +1,16 @@
 <?php
-class yml
+class yaml
 {
     public static $yaml;
     
     public static function load($file)
     {
-        return self::$yaml->load($file);
+        return self::$yaml->loadFile($file);
     }
     
     function __construct()
     {
-        require('yaml/Yaml.php');
-        self::$yaml = new Yaml();
+        require('yaml/Spyc.php');
+        self::$yaml = new Spyc();
     }
 }
