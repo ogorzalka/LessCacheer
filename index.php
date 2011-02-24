@@ -10,6 +10,7 @@ Class LessCacheer
      */
     public static $f = ''; // requested less files to parse
     public static $recache = false; // init of recache
+    public static $to_parse = true;
     public static $modules = array();
     public static $extends;
     public static $input = '';

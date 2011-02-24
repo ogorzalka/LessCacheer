@@ -4,9 +4,11 @@ class import
     /*
     Find need less files
     */
-    public static function collect_lessfiles()
+    public static function collect_stylesheets()
     {
-        LessCacheer::$less_files['mixins'] = LessCacheer::rglob(LessCacheer::$conf['mixins_path'] . '/*.less');
+        if (LessCacheer::$to_parse === true) {
+            LessCacheer::$less_files['mixins'] = LessCacheer::rglob(LessCacheer::$conf['mixins_path'] . '/*.less');
+        }
         LessCacheer::$less_files['user']   = LessCacheer::$f;
         
         // explode less files
@@ -22,7 +24,7 @@ class import
     public static function import_process()
     {
         if (LessCacheer::$recache === true) {
-            self::collect_lessfiles();
+            self::collect_stylesheets();
         }
     }
     

@@ -87,8 +87,17 @@ class conf
     {
         LessCacheer::$conf['base_path']      = LessCacheer::$extends->helpers->clean_path(dirname(__FILE__). '/../');
         LessCacheer::$conf['mixins_path']    = LessCacheer::$conf['base_path'] . LessCacheer::$conf['mixins_path'];
-
+        
         LessCacheer::$f                      = (LessCacheer::$f[0] == '/') ? LessCacheer::$extends->helpers->clean_path($_SERVER['DOCUMENT_ROOT'] . LessCacheer::$f) : LessCacheer::$f;
+
+        if (file_exists(LessCacheer::$f) && substr(strrchr(LessCacheer::$f, '.'), 1) == 'css') {
+            LessCacheer::$to_parse = false;
+        } else if (file_exists(str_replace('.css', '.less', LessCacheer::$f))) {
+            LessCacheer::$f = str_replace('.css', '.less', LessCacheer::$f);
+        } else {
+            LessCacheer::$headers = array('HTTP/1.0 404 Not Found');
+            die('Fichier non trouvé');
+        }
         
         LessCacheer::$conf['filecache_path'] = 'cache/' . str_replace(array(
             $_SERVER['DOCUMENT_ROOT'],
