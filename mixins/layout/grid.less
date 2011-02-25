@@ -10,7 +10,7 @@
 /* `Containers
 ----------------------------------------------------------------------------------------------------*/
 
-@column_width = (@page_width / @column_count - @gutter_width * 2);
+@page_width = @column_width * @column_count + @column_count * @gutter_width  * 2;
 
 @debug-grid {
     body {
